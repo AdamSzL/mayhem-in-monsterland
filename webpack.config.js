@@ -2,6 +2,10 @@ const path = require('path');
 module.exports = {
     entry: {
         index: './src/index.ts',
+        Game: './src/Game.ts',
+        WelcomeScreen: './src/WelcomeScreen.ts',
+        Logo: './src/Logo.ts',
+        helper: './src/helper.ts'
     },
     output: {
         path: path.resolve(__dirname, './dist'),

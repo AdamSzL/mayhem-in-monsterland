@@ -1,12 +1,6 @@
-@font-face {
-    font-family: 'Commodore';
-    src: url('../public/fonts/commodore-64.TTF') format('truetype');
-}
-
 * {
     margin: 0;
     padding: 0;
-    font-family: 'Commodore';
 }
 
 body,
@@ -24,11 +18,53 @@ html,
 }
 
 .main {
-    width: 1200px;
+    width: 1050px;
     height: 768px;
     background-color: rgb(16, 16, 16);
+    position: relative;
 }
 
-.font-loader {
-    color: #222222;
+.map {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.game {
+    position: absolute;
+    top: 648px;
+    left: 30px;
+    filter: hue-rotate(0deg);
+    transform: scale(1.5);
+    transition: left 1s ease-out;
+}
+
+.game.slideIn {
+    left: 300px;
+}
+
+.game.slideOut {
+    left: 30px;
+}
+
+.intro {
+    position: absolute;
+    top: 648px;
+    right: 30px;
+    filter: grayscale(1) opacity(.5);
+    transform: scale(1.5);
+    transition: right 1s ease-out;
+}
+
+.intro.slideIn {
+    right: 300px;
+}
+
+.intro.slideOut {
+    right: 30px;
+}
+
+video {
+    display: none;
+    background-color: black;
 }

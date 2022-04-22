@@ -8,15 +8,20 @@
     <title>Mayhem in Monsterland</title>
     <link rel="stylesheet" href="styles/main.css">
     <script src="dist/index.js" defer></script>
-    <link rel="icon" href="public/icon.png">
+    <link rel="icon" href="public/images/icon.png">
 </head>
 
 <body class="container">
-    <span style="font-family: 'Commodore';" class="font-loader">&nbsp;</span>
-    <canvas width="900" height="768" class="main">
+    <div class="main">
+        <canvas width="1050" height="768">
 
-    </canvas>
-    <span style="font-family: 'Commodore';" class="font-loader">&nbsp;</span>
+        </canvas>
+        <img src="public/images/game.png" alt="game" class="game" />
+        <img src="public/images/intro.png" alt="game" class="intro" />
+        <video controls width="1050" height="768" class="map">
+            <source src="./public/intro.mp4" type="video/mp4">
+        </video>
+    </div>
 </body>
 
 </html>
