@@ -1,9 +1,7 @@
-import { Logo } from './Logo';
-import { Game } from './Game';
+import Logo from './Logo';
+import Game from '../game/Game';
 
-export { WelcomeScreen }
-
-class WelcomeScreen {
+export default class WelcomeScreen {
 
     readonly FONT_SIZE: number = 60
     readonly HEIGHT_OFFSET: number = 120
@@ -31,7 +29,7 @@ class WelcomeScreen {
         this.slideTextIn();
 
         setTimeout(() => {
-            document.onkeydown = this.keyPressed.bind(this);
+            document.onkeydown = (e) => this.keyPressed(e);
         }, 1000);
     }
 
@@ -96,5 +94,6 @@ class WelcomeScreen {
     introEnded(intro: HTMLVideoElement) {
         intro.style.display = 'none';
         this.playfield.style.display = 'block';
+        this.game.start();
     }
 }

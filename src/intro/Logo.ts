@@ -1,10 +1,8 @@
-export { Logo }
-
-class Logo {
+export default class Logo {
 
     readonly WIDTH: number = 284
     readonly HEIGHT: number = 177
-    readonly MARGIN_HORIZONTAL: number = 100
+    readonly MARGIN_HORIZONTAL: number = 175
     readonly MARGIN_TOP: number = 100
     readonly DEST_WIDTH: number = 850
     readonly DEST_HEIGHT: number = 443

@@ -1,4 +1,4 @@
-import maps from '../maps.json';
+import maps from '../json/maps.json';
 
 const map = maps[1];
 console.log(map[5][84]);
