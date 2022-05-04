@@ -60,7 +60,11 @@ export class PlayerMovementController {
             this.isTopBeingHolded = false;
         }
         if (top && this.player.directionV === DirectionV.UP) {
-            this.player.directionV = DirectionV.DOWN;
+            this.player.shouldGravityWork = false;
+            this.player.directionV = DirectionV.NONE;
+            setTimeout(() => {
+                this.player.directionV = DirectionV.DOWN;
+            }, 100);
         }
         if (left) {
             this.isLeftBeingHolded = false;
@@ -74,6 +78,7 @@ export class PlayerMovementController {
 
                 if (this.isRightBeingHolded) {
                     this.player.isMoving = true;
+                    console.log('changing direction to right');
                     this.player.directionH = DirectionH.RIGHT;
                 }
             } else if (right && this.player.directionH === DirectionH.RIGHT) {
@@ -111,7 +116,7 @@ export class PlayerMovementController {
         } else if (mode === 'bottom') {
             y += 3;
             if (y > map.length - 1) {
-                alert('stopping game loop');
+                console.log('stopping game loop');
                 this.player.game.stopGameLoop();
                 return true;
             }
@@ -120,11 +125,15 @@ export class PlayerMovementController {
         } else if (mode === 'left') {
             x--;
             const blocks = [map[y][x], map[y + 1][x], map[y + 2][x]];
-            return (blocks.filter(block => blockingBlocks.includes(block)).length >= 2);
+            //console.log((blocks.filter(block => bbb.includes(block)).length >= 1))
+            return blocks[0] === 1 || blocks[1] === 1 || blocks[2] === 1;
         } else if (mode === 'right') {
             x += 3;
             const blocks = [map[y][x], map[y + 1][x], map[y + 2][x]];
-            return (blocks.filter(block => blockingBlocks.includes(block)).length >= 2);
+            if ((y === 9 && (x === 469 || x === 470)) || (y === 17 && (x === 377 || x === 378))) {
+                return false;
+            }
+            return blocks[0] === 1 || blocks[1] === 1 || blocks[2] === 1;
         }
     }
 

@@ -21,7 +21,7 @@ export default class Game {
 
     score: number = 0
     totalSeconds: number = 250
-    timeLeft: number
+    timeLeft: number = 250
     up: number = 3
     magic: number = 0
     stars: number = 0
@@ -68,10 +68,20 @@ export default class Game {
 
         this.fps = Math.round(1 / dt);
 
-        this.render(dt);
         this.lastTime = now;
+        //this.updateTimeLeft();
 
-        this.gameLoop = requestAnimationFrame(now => this.frame(now));
+        if (this.timeLeft > 0) {
+            this.render(dt);
+            this.gameLoop = requestAnimationFrame(now => this.frame(now));
+        } else {
+            console.log('lose');
+        }
+    }
+
+    updateTimeLeft() {
+        const secondsPassed = Math.floor(((Date.now() - this.startTime) / 1000));
+        this.timeLeft = this.totalSeconds - secondsPassed;
     }
 
     stopGameLoop() {
@@ -79,18 +89,12 @@ export default class Game {
     }
 
     render(dt: number) {
-        const secondsPassed = Math.floor(((Date.now() - this.startTime) / 1000));
-        this.timeLeft = this.totalSeconds - secondsPassed;
+        this.player.update(dt);
+        this.map.update(dt);
+        this.map.render();
+        this.player.render();
+        this.statsPanel.render();
         //this.map.x += this.map.vx * dt;
         //this.player.x += this.player.vx * dt;
-        if (this.timeLeft > 0) {
-            this.player.update(dt);
-            this.map.update(dt);
-            this.map.render();
-            this.player.render();
-            this.statsPanel.render();
-        } else {
-            alert('lose');
-        }
     }
 }

@@ -41,6 +41,7 @@ export default class Map implements IRenderable {
                 this.x -= this.vx * dt;
                 this.game.player.x -= this.vx * dt;
             } else if (this.game.player.directionH === DirectionH.RIGHT) {
+                console.log('direction is right (map)');
                 this.x += this.vx * dt;
                 this.game.player.x += this.vx * dt;
             }

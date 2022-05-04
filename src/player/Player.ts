@@ -14,7 +14,7 @@ export default class Player {
     x: number = 408
     y: number = 9
 
-    vx: number = 10
+    vx: number = 20
     jumpSpeed: number = 30
 
     width: number = 96
@@ -53,6 +53,8 @@ export default class Player {
     }
 
     update(dt: number) {
+        console.log(this.x);
+        console.log(this.movementController.checkIfBlocked('right'));
         const ramp = this.handleRamps();
         if (!this.isFlying && ramp) {
             const xOffset = this.x - ramp.x;
@@ -62,7 +64,7 @@ export default class Player {
             this.y = ramp.y + yOffset - 3;
         } else {
             if (this.shouldGravityWork) {
-                this.handleGravity(dt);
+                this.handleGravity();
             }
 
             if (this.movementController.isLeftBeingHolded && !this.isMoving && !this.movementController.checkIfBlocked('left')) {
@@ -71,13 +73,15 @@ export default class Player {
                 this.isMoving = true;
             }
 
-            if (Math.abs(this.x - this.movementController.roundCoord(this.x, 'h')) <= 0.1) {
-                if (this.directionH === DirectionH.RIGHT && this.isMoving && this.movementController.checkIfBlocked('right')) {
-                    this.isMoving = false;
-                } else if (this.directionH === DirectionH.LEFT && this.isMoving && this.movementController.checkIfBlocked('left')) {
-                    this.isMoving = false;
-                }
+            // if (Math.abs(this.x - this.movementController.roundCoord(this.x, 'h')) <= 0.1) {
+            if (this.directionH === DirectionH.RIGHT && this.isMoving && this.movementController.checkIfBlocked('right')) {
+                this.x = this.movementController.roundCoord(this.x, 'h');
+                this.isMoving = false;
+            } else if (this.directionH === DirectionH.LEFT && this.isMoving && this.movementController.checkIfBlocked('left')) {
+                this.x = this.movementController.roundCoord(this.x, 'h');
+                this.isMoving = false;
             }
+            // }
 
 
             if (this.directionV === DirectionV.UP) {
@@ -88,6 +92,7 @@ export default class Player {
                             this.isBeingBlocked = false;
                         }, 100);
                     }
+                    this.y = this.movementController.roundCoord(this.y, 'v');
                     this.directionV = DirectionV.NONE;
                     this.shouldGravityWork = false;
                     setTimeout(() => {
@@ -130,7 +135,7 @@ export default class Player {
         }
     }
 
-    handleGravity(dt: number) {
+    handleGravity() {
         if (this.directionV === DirectionV.NONE) {
             const diffFloor = Math.abs(this.y - Math.floor(this.y));
             const diffCeil = Math.abs(this.y - Math.ceil(this.y));
@@ -140,6 +145,7 @@ export default class Player {
                 const blocksUnder = [this.game.maps['1'][y][x], this.game.maps['1'][y][x + 1], this.game.maps['1'][y][x + 2]];
 
                 if (blocksUnder[0] === 0 && blocksUnder[1] === 0 && blocksUnder[2] === 0) {
+                    console.log('down down down');
                     this.isFlying = true;
                     this.directionV = DirectionV.DOWN;
                 } else {
