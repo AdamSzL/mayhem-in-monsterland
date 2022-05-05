@@ -17,7 +17,7 @@ export default class Map implements IRenderable {
     destX: number = 0
     destY: number = 0
     sprite: HTMLImageElement
-    vx: number = 18
+    vx: number = 5
 
     source: string
 
@@ -40,10 +40,13 @@ export default class Map implements IRenderable {
             if (this.game.player.directionH === DirectionH.LEFT) {
                 this.x -= this.vx * dt;
                 this.game.player.x -= this.vx * dt;
+
+                this.game.player.increaseSpeed(dt);
             } else if (this.game.player.directionH === DirectionH.RIGHT) {
-                console.log('direction is right (map)');
                 this.x += this.vx * dt;
                 this.game.player.x += this.vx * dt;
+
+                this.game.player.increaseSpeed(dt);
             }
         }
     }

@@ -50,7 +50,7 @@ export default class WelcomeScreen {
     }
 
     keyPressed(e: KeyboardEvent) {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' || (e.location === 3 && e.key === '0')) {
             this.animateTextOut(this.selectedOption);
         } else if (this.selectedOption === 'game' && (e.key.toLowerCase() === 'd' || e.key === 'ArrowRight')) {
             this.gameText.style.filter = 'grayscale(1) opacity(.5)';
