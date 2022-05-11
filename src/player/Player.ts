@@ -1,7 +1,7 @@
 import Game from '../game/Game'
 import playerSprites from '../../json/playerSprites.json'
 import { PlayerMovementController, DirectionH, DirectionV } from './PlayerMovementController';
-import { Ramp } from '../sprites/Map';
+import { Ramp } from '../map/Map';
 
 export interface PlayerSprite {
     x: number,
@@ -72,6 +72,7 @@ export default class Player {
     }
 
     update(dt: number) {
+        this.checkForMonsterCollisions();
         const ramp = this.handleRamps();
         if (!this.isFlying && ramp) {
             const xOffset = this.x - ramp.x;
@@ -90,7 +91,6 @@ export default class Player {
                 this.isMoving = true;
             }
 
-            // if (Math.abs(this.x - this.movementController.roundCoord(this.x, 'h')) <= 0.1) {
             if (this.directionH === DirectionH.RIGHT && this.isMoving && this.movementController.checkIfBlocked('right') && !this.checkIfXAtRamp()) {
                 this.x = this.movementController.roundCoord(this.x, 'h');
                 this.isMoving = false;
@@ -98,8 +98,6 @@ export default class Player {
                 this.x = this.movementController.roundCoord(this.x, 'h');
                 this.isMoving = false;
             }
-            // }
-
 
             if (this.directionV === DirectionV.UP) {
                 if (this.movementController.checkIfBlocked('top')) {
@@ -114,13 +112,13 @@ export default class Player {
                     this.shouldGravityWork = false;
                     setTimeout(() => {
                         this.directionV = DirectionV.DOWN;
-                    }, 100);
+                    }, 200);
                 } else if (this.isFlying && ((Math.abs(this.y - this.jumpStartY) >= Game.JUMP_HEIGHT))) {
                     this.directionV = DirectionV.NONE;
                     this.shouldGravityWork = false;
                     setTimeout(() => {
                         this.directionV = DirectionV.DOWN;
-                    }, 100);
+                    }, 200);
 
                 } else {
                     this.y -= (dt * this.jumpSpeed);
@@ -154,10 +152,10 @@ export default class Player {
             }
         }
 
+        this.updateSprite(dt);
+    }
 
-
-
-
+    updateSprite(dt: number) {
         if (this.directionH === DirectionH.RIGHT && this.isMoving) {
             this.currentPosIndex += (dt * this.spriteChangeSpeed);
         } else if (this.directionH === DirectionH.LEFT && this.isMoving) {
@@ -197,14 +195,6 @@ export default class Player {
         }
     }
 
-    checkOffset(mode: string) {
-        if (mode === 'v') {
-            return Math.abs(this.y - this.movementController.roundCoord(this.y, 'v')) <= 0.2;
-        } else {
-            return Math.abs(this.x - this.movementController.roundCoord(this.y, 'h')) <= 0.2;
-        }
-    }
-
     handleRamps(): (Ramp | null) {
         const ramps = this.game.map.ramps;
         const ramp = ramps.find(ramp => (this.x >= ramp.x && this.x < ramp.x + ramp.width && this.y >= ramp.y - 3 && this.y < ramp.y + ramp.height));
@@ -215,6 +205,27 @@ export default class Player {
         const ramps = this.game.map.ramps;
         const ramp = ramps.find(ramp => (this.x >= ramp.x && this.x < ramp.x + ramp.width));
         return (ramp ? true : false);
+    }
+
+    checkForMonsterCollisions() {
+        const width = this.width / Game.CELL_SIZE;
+        const height = this.height / Game.CELL_SIZE;
+        this.game.monsters.forEach(monster => {
+            if (Math.abs(this.x - monster.x) <= 5) {
+                const monsterWidth = monster.width / Game.CELL_SIZE;
+                const monsterHeight = monster.height / Game.CELL_SIZE;
+                if (this.x < monster.x + monsterWidth && this.x + width > monster.x && this.y < monster.y + monsterHeight && height + this.y > monster.y) {
+                    if (this.directionV === DirectionV.DOWN) {
+                        monster.isAlive = false;
+                        setTimeout(() => {
+                            monster.isAlive = true;
+                        }, monster.RESPAWN_TIMEOUT);
+                    } else {
+                        console.log('tracisz hp');
+                    }
+                }
+            }
+        });
     }
 
     render() {

@@ -1,6 +1,6 @@
 import Game from '../game/Game';
 import { DirectionH, DirectionV } from '../player/PlayerMovementController';
-import IRenderable from './IRenderable';
+import IRenderable from '../sprites/IRenderable';
 import ramps from '../../json/ramps.json';
 
 export interface Ramp {

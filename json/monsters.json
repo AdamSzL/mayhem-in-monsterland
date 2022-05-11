@@ -1,0 +1,310 @@
+[
+    {
+        "type": "standard",
+        "x": 428,
+        "y": 9,
+        "range": {
+            "horizontal": 20,
+            "vertical": 0
+        },
+        "speed": 6,
+        "mode": "normal"
+    },
+    {
+        "type": "standard",
+        "x": 460,
+        "y": 9,
+        "range": {
+            "horizontal": 20,
+            "vertical": 0
+        },
+        "speed": 6,
+        "mode": "normal"
+    },
+    {
+        "type": "wasp",
+        "x": 420,
+        "y": 1,
+        "range": {
+            "horizontal": 16,
+            "vertical": 0
+        },
+        "speed": 6,
+        "mode": "normal"
+    },
+    {
+        "type": "standard",
+        "x": 416,
+        "y": 17,
+        "range": {
+            "horizontal": 12,
+            "vertical": 0
+        },
+        "speed": 3,
+        "mode": "normal"
+    },
+    {
+        "type": "standard",
+        "x": 256,
+        "y": 9,
+        "range": {
+            "horizontal": 16,
+            "vertical": 0
+        },
+        "speed": 6,
+        "mode": "normal"
+    },
+    {
+        "type": "standard",
+        "x": 212,
+        "y": 5,
+        "range": {
+            "horizontal": 28,
+            "vertical": 0
+        },
+        "speed": 6,
+        "mode": "shooting"
+    },
+    {
+        "type": "standard",
+        "x": 220,
+        "y": 13,
+        "range": {
+            "horizontal": 8,
+            "vertical": 0
+        },
+        "speed": 6,
+        "mode": "normal"
+    },
+    {
+        "type": "standard",
+        "x": 180,
+        "y": 5,
+        "range": {
+            "horizontal": 12,
+            "vertical": 0
+        },
+        "speed": 3,
+        "mode": "normal"
+    },
+    {
+        "type": "standard",
+        "x": 120,
+        "y": 9,
+        "range": {
+            "horizontal": 28,
+            "vertical": 0
+        },
+        "speed": 6,
+        "mode": "shooting"
+    },
+    {
+        "type": "standard",
+        "x": 132,
+        "y": 17,
+        "range": {
+            "horizontal": 16,
+            "vertical": 0
+        },
+        "speed": 3,
+        "mode": "normal"
+    },
+    {
+        "type": "standard",
+        "x": 52,
+        "y": 9,
+        "range": {
+            "horizontal": 12,
+            "vertical": 0
+        },
+        "speed": 3,
+        "mode": "normal"
+    },
+    {
+        "type": "standard",
+        "x": 488,
+        "y": 13,
+        "range": {
+            "horizontal": 8,
+            "vertical": 0
+        },
+        "speed": 6,
+        "mode": "normal"
+    },
+    {
+        "type": "standard",
+        "x": 508,
+        "y": 7,
+        "range": {
+            "horizontal": 16,
+            "vertical": 0
+        },
+        "speed": 6,
+        "mode": "normal"
+    },
+    {
+        "type": "standard",
+        "x": 536,
+        "y": 9,
+        "range": {
+            "horizontal": 28,
+            "vertical": 0
+        },
+        "speed": 6,
+        "mode": "normal"
+    },
+    {
+        "type": "wasp",
+        "x": 584,
+        "y": 5,
+        "range": {
+            "horizontal": 16,
+            "vertical": 8
+        },
+        "speed": 6,
+        "mode": "special"
+    },
+    {
+        "type": "standard",
+        "x": 612,
+        "y": 17,
+        "range": {
+            "horizontal": 16,
+            "vertical": 0
+        },
+        "speed": 6,
+        "mode": "normal"
+    },
+    {
+        "type": "standard",
+        "x": 648,
+        "y": 9,
+        "range": {
+            "horizontal": 28,
+            "vertical": 0
+        },
+        "speed": 6,
+        "mode": "shooting"
+    },
+    {
+        "type": "standard",
+        "x": 672,
+        "y": 5,
+        "range": {
+            "horizontal": 20,
+            "vertical": 8
+        },
+        "speed": 6,
+        "mode": "shooting"
+    },
+    {
+        "type": "wasp",
+        "x": 692,
+        "y": 1,
+        "range": {
+            "horizontal": 20,
+            "vertical": 0
+        },
+        "speed": 3,
+        "mode": "normal"
+    },
+    {
+        "type": "standard",
+        "x": 717,
+        "y": 9,
+        "range": {
+            "horizontal": 16,
+            "vertical": 0
+        },
+        "speed": 6,
+        "mode": "shooting"
+    },
+    {
+        "type": "wasp",
+        "x": 728,
+        "y": 1,
+        "range": {
+            "horizontal": 20,
+            "vertical": 0
+        },
+        "speed": 3,
+        "mode": "normal"
+    },
+    {
+        "type": "standard",
+        "x": 752,
+        "y": 5,
+        "range": {
+            "horizontal": 16,
+            "vertical": 8
+        },
+        "speed": 6,
+        "mode": "shooting"
+    },
+    {
+        "type": "standard",
+        "x": 776,
+        "y": 5,
+        "range": {
+            "horizontal": 16,
+            "vertical": 0
+        },
+        "speed": 3,
+        "mode": "normal"
+    },
+    {
+        "type": "standard",
+        "x": 780,
+        "y": 17,
+        "range": {
+            "horizontal": 12,
+            "vertical": 0
+        },
+        "speed": 3,
+        "mode": "normal"
+    },
+    {
+        "type": "standard",
+        "x": 804,
+        "y": 13,
+        "range": {
+            "horizontal": 12,
+            "vertical": 0
+        },
+        "speed": 3,
+        "mode": "normal"
+    },
+    {
+        "type": "wasp",
+        "x": 804,
+        "y": 5,
+        "range": {
+            "horizontal": 20,
+            "vertical": 0
+        },
+        "speed": 3,
+        "mode": "normal"
+    },
+    {
+        "type": "standard",
+        "x": 880,
+        "y": 5,
+        "range": {
+            "horizontal": 12,
+            "vertical": 0
+        },
+        "speed": 3,
+        "mode": "normal"
+    },
+    {
+        "type": "standard",
+        "x": 900,
+        "y": 5,
+        "range": {
+            "horizontal": 12,
+            "vertical": 0
+        },
+        "speed": 3,
+        "mode": "normal"
+    }
+]
