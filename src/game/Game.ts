@@ -12,22 +12,25 @@ import Checkpoint from '../map/Checkpoint';
 import Standard from '../monster/Standard';
 import Wasp from '../monster/Wasp';
 import StandardShooting from '../monster/StandardShooting';
+import MonsterSprites from '../monster/MonsterSprites';
+import MagicDust from './MagicDust';
 
 
 export default class Game {
 
     static readonly PLAYFIELD_WIDTH: number = 1200
-    static readonly PLAYFIELD_HEIGHT: number = 800
+    static readonly PLAYFIELD_HEIGHT: number = 810
     static readonly BLOCK_SIZE: number = 128
     static readonly CELL_SIZE: number = 32
     static readonly BLOCKS_VERT: number = 6
     static readonly BLOCKS_HORZ: number = 240
     static readonly PLAYER_WIDTH: number = 96
     static readonly PLAYER_HEIGHT: number = 84
-    static readonly JUMP_HEIGHT: number = 8
-    static readonly MAX_SPEED = 18
-    static readonly BASE_SPEED = 6
-    static readonly SPEED_MULTIPLIER = 20
+    static readonly MAX_SPEED: number = 18
+    static readonly BASE_SPEED: number = 6
+    static readonly SPEED_MULTIPLIER: number = 20
+    static readonly MONSTER_KILLED_JUMP_HEIGHT: number = 3
+    static readonly BASE_JUMP_HEIGHT: number = 8
 
     maps: { [key: string]: (string | number)[][] } = maps
 
@@ -40,6 +43,8 @@ export default class Game {
     startTime: number
     lastTime: number
     fps: number
+    jumpHeight: number = 8
+    currentLevel: number = 1
 
     statsPanel: StatsPanel
 
@@ -52,6 +57,7 @@ export default class Game {
 
     monsters: Monster[] = []
     checkpoints: Checkpoint[] = []
+    magicDusts: MagicDust[] = []
 
     constructor() {
         const welcomeScreen = new WelcomeScreen(this);
@@ -61,12 +67,15 @@ export default class Game {
 
     async loadSprites() {
         const spritesLoader = new SpritesLoader();
-        const [map, score, magic, time, up, stars, numbers, player, monsters, checkpoint, checkpointActive] = await Promise.all(spritesLoader.load());
+        const [map, score, magic, time, up, stars, numbers, player, monsterSprite, monsterAnimationSprite, starsSprite, checkpointInactiveSprite, checkpointActiveSprite, magicDustSprite] = await Promise.all(spritesLoader.load());
+        MagicDust.sprite = magicDustSprite;
+        MonsterSprites.normalSprite = monsterSprite;
+        MonsterSprites.animationSprite = monsterAnimationSprite;
         this.statsPanel = new StatsPanel(this, [score, magic, time, up, stars, numbers]);
         this.map = new Map(this, map);
         this.player = new Player(this, player);
-        this.spawnMonsters(monsters);
-        this.initCheckpoints(checkpoint, checkpointActive);
+        this.spawnMonsters();
+        this.initCheckpoints(checkpointInactiveSprite, checkpointActiveSprite);
     }
 
     async start() {
@@ -78,25 +87,27 @@ export default class Game {
         this.gameLoop = requestAnimationFrame(now => this.frame(now));
     }
 
-    spawnMonsters(sprite: HTMLImageElement) {
+    spawnMonsters() {
         monsters.forEach(monster => {
             if (monster.type === 'standard') {
                 const spriteData = monsterSprites.standard;
                 if (monster.mode === 'shooting') {
-                    this.monsters.push(new StandardShooting(this, monster.x, monster.y, monster.range, monster.speed, monster.mode, sprite, spriteData));
+                    this.monsters.push(new StandardShooting(this, monster.x, monster.y, monster.range, monster.speed, monster.mode, monster.points, spriteData));
                 } else {
-                    this.monsters.push(new Standard(this, monster.x, monster.y, monster.range, monster.speed, monster.mode, sprite, spriteData));
+                    this.monsters.push(new Standard(this, monster.x, monster.y, monster.range, monster.speed, monster.mode, monster.points, spriteData));
                 }
             } else if (monster.type === 'wasp') {
                 const spriteData = monsterSprites.wasp;
-                this.monsters.push(new Wasp(this, monster.x, monster.y, monster.range, monster.speed, monster.mode, sprite, spriteData));
+                this.monsters.push(new Wasp(this, monster.x, monster.y, monster.range, monster.speed, monster.mode, monster.points, spriteData));
             }
         });
     }
 
-    initCheckpoints(checkpointSprite: HTMLImageElement, activeCheckpointSprite: HTMLImageElement) {
+    initCheckpoints(inactiveCheckpointSprite: HTMLImageElement, activeCheckpointSprite: HTMLImageElement) {
+        Checkpoint.inactiveSprite = inactiveCheckpointSprite;
+        Checkpoint.activeSprite = activeCheckpointSprite;
         checkpoints.forEach(checkpoint => {
-            this.checkpoints.push(new Checkpoint(this, checkpoint.x, checkpoint.y, checkpoint.width, checkpoint.height, checkpointSprite, activeCheckpointSprite));
+            this.checkpoints.push(new Checkpoint(this, checkpoint.x, checkpoint.y, checkpoint.width, checkpoint.height));
         });
     }
 
@@ -110,9 +121,10 @@ export default class Game {
         const dt = Math.abs((now - this.lastTime) / 1000);
 
         this.fps = Math.round(1 / dt);
+        this.updateFps();
 
         this.lastTime = now;
-        //this.updateTimeLeft();
+        this.updateTimeLeft();
 
         if (this.timeLeft > 0) {
             this.render(dt);
@@ -120,6 +132,11 @@ export default class Game {
         } else {
             console.log('lose');
         }
+    }
+
+    updateFps() {
+        const fpsInfo = document.querySelector('.fps-info');
+        fpsInfo.innerHTML = this.fps.toString();
     }
 
     updateTimeLeft() {
@@ -131,15 +148,7 @@ export default class Game {
         cancelAnimationFrame(this.gameLoop);
     }
 
-    renderVisibleMonsters() {
-        this.monsters.forEach(monster => {
-            if (monster.isAlive) {
-                monster.render();
-            }
-        });
-    }
-
-    renderVisibleCheckpoints() {
+    renderCheckpoints() {
         this.checkpoints.forEach(checkpoint => {
             if (true) {
                 checkpoint.render();
@@ -148,13 +157,9 @@ export default class Game {
     }
 
     handleChekpointReach() {
-        const playerWidth = this.player.width / Game.CELL_SIZE;
-        const playerHeight = this.player.height / Game.CELL_SIZE;
         this.checkpoints.forEach(checkpoint => {
-            const checkpointWidth = checkpoint.width / Game.CELL_SIZE;
-            const checkpointHeight = checkpoint.height / Game.CELL_SIZE;
             if (Math.abs(this.player.x - checkpoint.x) <= 5 && !checkpoint.isActive) {
-                if (this.player.x < checkpoint.x + checkpointWidth && this.player.x + playerWidth > checkpoint.x && this.player.y < checkpoint.y + checkpointHeight && playerHeight + this.player.y > checkpoint.y) {
+                if (this.player.checkIfCollides(checkpoint)) {
                     this.makeCheckpointsInactive();
                     checkpoint.isActive = true;
                 }
@@ -170,16 +175,15 @@ export default class Game {
 
     render(dt: number) {
         this.handleChekpointReach();
-        this.monsters.forEach(monster => {
-            if (monster.isAlive) {
-                monster.update(dt);
-            }
-        });
+        this.monsters.forEach(monster => monster.update(dt));
+        this.magicDusts.forEach(magicDust => magicDust.update(dt));
+        this.checkpoints.forEach(checkpoint => checkpoint.update(dt));
         this.player.update(dt);
         this.map.update(dt);
         this.map.render();
-        this.renderVisibleMonsters();
-        this.renderVisibleCheckpoints();
+        this.monsters.forEach(monster => monster.render());
+        this.renderCheckpoints();
+        this.magicDusts.forEach(magicDust => magicDust.render());
         this.player.render();
         this.statsPanel.render();
     }

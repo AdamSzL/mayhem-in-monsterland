@@ -1,5 +1,7 @@
 import { DirectionH, DirectionV } from '../player/PlayerMovementController';
 import Game from '../game/Game';
+import MonsterSprites from './MonsterSprites';
+import MagicDust from '../game/MagicDust';
 
 
 interface Range {
@@ -26,6 +28,7 @@ export default class Monster {
     readonly SPRITE_SPEED_MULTIPLIER: number = 1
     readonly STAND_TIMEOUT: number = 100
     readonly RESPAWN_TIMEOUT: number = 3000
+    readonly DEAD_ANIM_SPEED: number = 15
     //kolizje z graczem
 
     spriteCoords: { x: number, y: number }[]
@@ -35,10 +38,12 @@ export default class Monster {
     startY: number
     x: number
     y: number
+    points: number
 
     isShooting: boolean = false
     isStanding: boolean = false
     isAlive: boolean = true
+    dropsMagicDust: boolean = true
 
     currentSpriteIndex = 0
 
@@ -48,6 +53,8 @@ export default class Monster {
     speed: number
     mode: string
 
+    isAnimationRunning: boolean = false
+
     sprite: HTMLImageElement
     spriteData: MonsterSpritesData
 
@@ -56,7 +63,8 @@ export default class Monster {
 
     game: Game
 
-    constructor(game: Game, x: number, y: number, range: Range, speed: number, mode: string, sprite: HTMLImageElement, spriteData: MonsterSpritesData) {
+
+    constructor(game: Game, x: number, y: number, range: Range, speed: number, mode: string, points: number, spriteData: MonsterSpritesData) {
         this.game = game;
         this.x = x;
         this.y = y;
@@ -65,7 +73,7 @@ export default class Monster {
         this.range = range;
         this.speed = speed;
         this.mode = mode;
-        this.sprite = sprite;
+        this.points = points;
         this.spriteData = spriteData;
 
         this.width = spriteData.moving.right[this.currentSpriteIndex].width;
@@ -78,7 +86,7 @@ export default class Monster {
         if (this.shouldSpriteIndexIncrease) {
             this.currentSpriteIndex += (dt * this.speed * this.SPRITE_SPEED_MULTIPLIER);
         } else {
-            this.currentSpriteIndex -= (dt * this.speed * 2);
+            this.currentSpriteIndex -= (dt * this.speed * this.SPRITE_SPEED_MULTIPLIER);
         }
 
         if (this.currentSpriteIndex <= 0 && !this.shouldSpriteIndexIncrease) {
@@ -88,21 +96,47 @@ export default class Monster {
             this.currentSpriteIndex = 2;
             this.shouldSpriteIndexIncrease = false;
         }
+
     }
+
+    updateAnimationSprite(dt: number) {
+        this.currentSpriteIndex += (dt * this.DEAD_ANIM_SPEED);
+
+        if (this.currentSpriteIndex >= MonsterSprites.ANIM_SPRITE_COUNT) {
+            this.resetSprite();
+            this.isAnimationRunning = false;
+
+            if (this.dropsMagicDust) {
+                setTimeout(() => {
+                    this.game.magicDusts.push(new MagicDust(this.x, this.y, this.game));
+                }, 200);
+            }
+        }
+    }
+
+    resetSprite() { }
 
     render() {
         const ctx = this.game.playfield.getContext('2d');
-        const x = (this.x - this.game.map.x) * Game.CELL_SIZE;
-        const topOffset = Game.CELL_SIZE * 3 - this.height;
-        const y = this.y * Game.CELL_SIZE + topOffset;
-        const spriteInd = this.shouldSpriteIndexIncrease ? Math.floor(this.currentSpriteIndex) : Math.ceil(this.currentSpriteIndex);
-        let spriteX: number = (this.directionH === DirectionH.LEFT ? this.spriteData.moving.left[spriteInd].x : this.spriteData.moving.right[spriteInd].x);
-        let spriteY: number = (this.directionH === DirectionH.LEFT ? this.spriteData.moving.left[spriteInd].y : this.spriteData.moving.right[spriteInd].y);
-        if (this.isStanding) {
-            spriteX = this.spriteData.standing.x;
-            spriteY = this.spriteData.standing.y;
+        if (this.isAlive) {
+            const x = (this.x - this.game.map.x) * Game.CELL_SIZE;
+            const topOffset = Game.CELL_SIZE * 3 - this.height;
+            const y = this.y * Game.CELL_SIZE + topOffset;
+            const spriteInd = this.shouldSpriteIndexIncrease ? Math.floor(this.currentSpriteIndex) : Math.ceil(this.currentSpriteIndex);
+            let spriteX: number = (this.directionH === DirectionH.LEFT ? this.spriteData.moving.left[spriteInd].x : this.spriteData.moving.right[spriteInd].x);
+            let spriteY: number = (this.directionH === DirectionH.LEFT ? this.spriteData.moving.left[spriteInd].y : this.spriteData.moving.right[spriteInd].y);
+            if (this.isStanding) {
+                spriteX = this.spriteData.standing.x;
+                spriteY = this.spriteData.standing.y;
+            }
+            ctx.drawImage(MonsterSprites.normalSprite, spriteX, spriteY, this.width, this.height, x, y, this.width, this.height);
+        } else if (this.isAnimationRunning) {
+            const animSpriteIndex = Math.floor(this.currentSpriteIndex);
+            const x = (this.x - this.game.map.x) * Game.CELL_SIZE;
+            const topOffset = Game.CELL_SIZE * 3 - 76;
+            const y = this.y * Game.CELL_SIZE + topOffset;
+            ctx.drawImage(MonsterSprites.animationSprite, MonsterSprites.ANIM_SPRITE_WIDTH * animSpriteIndex, 0, MonsterSprites.ANIM_SPRITE_WIDTH, MonsterSprites.ANIM_SPRITE_HEIGHT, x, y, MonsterSprites.ANIM_SPRITE_WIDTH, MonsterSprites.ANIM_SPRITE_HEIGHT);
         }
-        ctx.drawImage(this.sprite, spriteX, spriteY, this.width, this.height, x, y, this.width, this.height);
     }
 
 }

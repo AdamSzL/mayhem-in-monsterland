@@ -8,7 +8,8 @@
             "vertical": 0
         },
         "speed": 6,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 100
     },
     {
         "type": "standard",
@@ -19,7 +20,8 @@
             "vertical": 0
         },
         "speed": 6,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 500
     },
     {
         "type": "wasp",
@@ -30,7 +32,8 @@
             "vertical": 0
         },
         "speed": 6,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 500
     },
     {
         "type": "standard",
@@ -41,7 +44,8 @@
             "vertical": 0
         },
         "speed": 3,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 1000
     },
     {
         "type": "standard",
@@ -52,7 +56,8 @@
             "vertical": 0
         },
         "speed": 6,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 500
     },
     {
         "type": "standard",
@@ -63,7 +68,8 @@
             "vertical": 0
         },
         "speed": 6,
-        "mode": "shooting"
+        "mode": "shooting",
+        "points": 1000
     },
     {
         "type": "standard",
@@ -74,7 +80,8 @@
             "vertical": 0
         },
         "speed": 6,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 500
     },
     {
         "type": "standard",
@@ -85,7 +92,8 @@
             "vertical": 0
         },
         "speed": 3,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 100
     },
     {
         "type": "standard",
@@ -96,7 +104,8 @@
             "vertical": 0
         },
         "speed": 6,
-        "mode": "shooting"
+        "mode": "shooting",
+        "points": 1000
     },
     {
         "type": "standard",
@@ -107,7 +116,8 @@
             "vertical": 0
         },
         "speed": 3,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 500
     },
     {
         "type": "standard",
@@ -118,7 +128,8 @@
             "vertical": 0
         },
         "speed": 3,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 500
     },
     {
         "type": "standard",
@@ -129,7 +140,8 @@
             "vertical": 0
         },
         "speed": 6,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 200
     },
     {
         "type": "standard",
@@ -140,18 +152,20 @@
             "vertical": 0
         },
         "speed": 6,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 500
     },
     {
         "type": "standard",
-        "x": 536,
+        "x": 538,
         "y": 9,
         "range": {
             "horizontal": 28,
             "vertical": 0
         },
         "speed": 6,
-        "mode": "normal"
+        "mode": "shooting",
+        "points": 1000
     },
     {
         "type": "wasp",
@@ -162,7 +176,8 @@
             "vertical": 8
         },
         "speed": 6,
-        "mode": "special"
+        "mode": "special",
+        "points": 500
     },
     {
         "type": "standard",
@@ -173,7 +188,8 @@
             "vertical": 0
         },
         "speed": 6,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 500
     },
     {
         "type": "standard",
@@ -184,7 +200,8 @@
             "vertical": 0
         },
         "speed": 6,
-        "mode": "shooting"
+        "mode": "shooting",
+        "points": 1000
     },
     {
         "type": "standard",
@@ -195,7 +212,8 @@
             "vertical": 8
         },
         "speed": 6,
-        "mode": "shooting"
+        "mode": "shooting",
+        "points": 1000
     },
     {
         "type": "wasp",
@@ -206,7 +224,8 @@
             "vertical": 0
         },
         "speed": 3,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 500
     },
     {
         "type": "standard",
@@ -217,7 +236,8 @@
             "vertical": 0
         },
         "speed": 6,
-        "mode": "shooting"
+        "mode": "shooting",
+        "points": 1000
     },
     {
         "type": "wasp",
@@ -228,7 +248,8 @@
             "vertical": 0
         },
         "speed": 3,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 500
     },
     {
         "type": "standard",
@@ -239,7 +260,8 @@
             "vertical": 8
         },
         "speed": 6,
-        "mode": "shooting"
+        "mode": "shooting",
+        "points": 1000
     },
     {
         "type": "standard",
@@ -250,7 +272,8 @@
             "vertical": 0
         },
         "speed": 3,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 500
     },
     {
         "type": "standard",
@@ -261,7 +284,8 @@
             "vertical": 0
         },
         "speed": 3,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 1000
     },
     {
         "type": "standard",
@@ -272,7 +296,8 @@
             "vertical": 0
         },
         "speed": 3,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 500
     },
     {
         "type": "wasp",
@@ -283,7 +308,8 @@
             "vertical": 0
         },
         "speed": 3,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 500
     },
     {
         "type": "standard",
@@ -294,7 +320,8 @@
             "vertical": 0
         },
         "speed": 3,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 500
     },
     {
         "type": "standard",
@@ -305,6 +332,7 @@
             "vertical": 0
         },
         "speed": 3,
-        "mode": "normal"
+        "mode": "normal",
+        "points": 500
     }
 ]

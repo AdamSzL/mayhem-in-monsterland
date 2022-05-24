@@ -68,3 +68,10 @@ video {
     display: none;
     background-color: black;
 }
+
+.fps-info {
+    position: absolute;
+    right: 0;
+    top: 0;
+    color: white;
+}

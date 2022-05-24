@@ -140,7 +140,7 @@ export class PlayerMovementController {
     }
 
     checkIfBlocked(mode: string): boolean {
-        const map = this.player.game.maps['1'];
+        const map = this.player.game.maps[this.player.game.currentLevel];
         let x = this.roundCoord(this.player.x, 'h');
         let y = (this.roundCoord(this.player.y, 'v') < 0 ? 0 : this.roundCoord(this.player.y, 'v'));
         let blockingBlocks: (string | number)[] = [1, 2];
@@ -193,5 +193,10 @@ export class PlayerMovementController {
                 return Math.floor(coord);
             }
         }
+    }
+
+    runFallingAnimation() {
+        const targetY = this.player.y + (this.player.width / Game.CELL_SIZE);
+        console.log(this.player.y);
     }
 }

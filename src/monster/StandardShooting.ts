@@ -7,6 +7,7 @@ export default class StandardShooting extends Standard {
     currentSpriteIndex: number = 1
 
     update(dt: number) {
+        //Star.update()
         if (this.game.player.x <= this.x && this.directionH === DirectionH.RIGHT) {
             this.isStanding = true;
             setTimeout(() => {
@@ -20,5 +21,13 @@ export default class StandardShooting extends Standard {
                 this.directionH = DirectionH.RIGHT;
             }, this.STAND_TIMEOUT);
         }
+
+        if (this.isAnimationRunning) {
+            this.updateAnimationSprite(dt);
+        }
+    }
+
+    resetSprite() {
+        this.currentSpriteIndex = 1;
     }
 }
