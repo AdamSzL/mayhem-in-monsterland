@@ -12,7 +12,7 @@ export interface Ramp {
 }
 
 export default class Map implements IRenderable {
-    x: number = 391
+    x: number = 571
     y: number = 0
     destX: number = 0
     destY: number = 0

@@ -1,6 +1,7 @@
 import MovingMonster from './MovingMonster';
 
 export default class Standard extends MovingMonster {
+
     update(dt: number) {
         if (this.isAlive) {
             this.handleMovement(dt);

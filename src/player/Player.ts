@@ -5,6 +5,7 @@ import { Ramp } from '../map/Map';
 import Checkpoint from '../map/Checkpoint';
 import Monster from '../monster/Monster';
 import MagicDust from '../game/MagicDust';
+import MonsterStar from '../monster/MonsterStar';
 
 export interface PlayerSprite {
     x: number,
@@ -14,7 +15,7 @@ export interface PlayerSprite {
 export default class Player {
     readonly TOP_OFFSET = Game.PLAYER_WIDTH - Game.PLAYER_HEIGHT
 
-    x: number = 408
+    x: number = 588
     y: number = 9
 
     vx: number = 20
@@ -77,6 +78,7 @@ export default class Player {
     }
 
     update(dt: number) {
+        this.checkForMonsterStarsCollisions();
         this.checkForMonsterCollisions();
         this.checkForMagicDustsCollisions();
         const ramp = this.handleRamps();
@@ -237,6 +239,9 @@ export default class Player {
                         this.game.score += monster.points;
                         monster.isAnimationRunning = true;
                         monster.currentSpriteIndex = 0;
+                        if (monster.mode === "shooting") {
+                            this.game.disableMonsterStarRespawn(monster.x, monster.y);
+                        }
                         // setTimeout(() => {
                         //     monster.isAlive = true;
                         // }, monster.RESPAWN_TIMEOUT);
@@ -261,7 +266,15 @@ export default class Player {
         });
     }
 
-    checkIfCollides(entity: (Monster | MagicDust | Checkpoint)) {
+    checkForMonsterStarsCollisions() {
+        this.game.monsterStars.forEach(star => {
+            if (this.checkIfCollides(star) && star.isPresent && !star.isAtPeak) {
+                console.log('z gwiazeczka');
+            }
+        });
+    }
+
+    checkIfCollides(entity: (Monster | MagicDust | Checkpoint | MonsterStar)) {
         const width = this.width / Game.CELL_SIZE;
         const height = this.height / Game.CELL_SIZE;
         const entityWidth = entity.width / Game.CELL_SIZE;

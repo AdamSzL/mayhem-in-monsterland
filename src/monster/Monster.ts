@@ -4,7 +4,7 @@ import MonsterSprites from './MonsterSprites';
 import MagicDust from '../game/MagicDust';
 
 
-interface Range {
+export interface Range {
     horizontal: number,
     vertical: number
 }
@@ -25,6 +25,8 @@ interface MonsterSpriteData {
 }
 
 export default class Monster {
+    static BASE_WIDTH: number = 3
+
     readonly SPRITE_SPEED_MULTIPLIER: number = 1
     readonly STAND_TIMEOUT: number = 100
     readonly RESPAWN_TIMEOUT: number = 3000
@@ -43,7 +45,7 @@ export default class Monster {
     isShooting: boolean = false
     isStanding: boolean = false
     isAlive: boolean = true
-    dropsMagicDust: boolean = true
+    dropsMagicDust: boolean = false
 
     currentSpriteIndex = 0
 
@@ -78,6 +80,17 @@ export default class Monster {
 
         this.width = spriteData.moving.right[this.currentSpriteIndex].width;
         this.height = spriteData.moving.right[this.currentSpriteIndex].height;
+    }
+
+    randomizeMagicDustDrop(percent: number) {
+        const elements = new Array(100).fill(0);
+        for (let i = 0; i < Math.round(percent); i++) {
+            elements[i] = 1;
+        }
+        const randomElement = elements[Math.floor(Math.random() * elements.length)];
+        if (randomElement === 1) {
+            this.dropsMagicDust = true;
+        }
     }
 
     update(dt: number) { }

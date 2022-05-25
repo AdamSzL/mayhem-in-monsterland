@@ -14,6 +14,8 @@ import Wasp from '../monster/Wasp';
 import StandardShooting from '../monster/StandardShooting';
 import MonsterSprites from '../monster/MonsterSprites';
 import MagicDust from './MagicDust';
+import MonsterStar from '../monster/MonsterStar';
+import { DirectionH } from '../player/PlayerMovementController';
 
 
 export default class Game {
@@ -58,6 +60,7 @@ export default class Game {
     monsters: Monster[] = []
     checkpoints: Checkpoint[] = []
     magicDusts: MagicDust[] = []
+    monsterStars: MonsterStar[] = []
 
     constructor() {
         const welcomeScreen = new WelcomeScreen(this);
@@ -67,7 +70,9 @@ export default class Game {
 
     async loadSprites() {
         const spritesLoader = new SpritesLoader();
-        const [map, score, magic, time, up, stars, numbers, player, monsterSprite, monsterAnimationSprite, starsSprite, checkpointInactiveSprite, checkpointActiveSprite, magicDustSprite] = await Promise.all(spritesLoader.load());
+        const [map, score, magic, time, up, stars, numbers, player, monsterSprite, monsterAnimationSprite, starsSprite, starsAnimationSprite, checkpointInactiveSprite, checkpointActiveSprite, magicDustSprite] = await Promise.all(spritesLoader.load());
+        MonsterStar.sprite = starsSprite;
+        MonsterStar.peakAnimationSprite = starsAnimationSprite;
         MagicDust.sprite = magicDustSprite;
         MonsterSprites.normalSprite = monsterSprite;
         MonsterSprites.animationSprite = monsterAnimationSprite;
@@ -92,9 +97,20 @@ export default class Game {
             if (monster.type === 'standard') {
                 const spriteData = monsterSprites.standard;
                 if (monster.mode === 'shooting') {
-                    this.monsters.push(new StandardShooting(this, monster.x, monster.y, monster.range, monster.speed, monster.mode, monster.points, spriteData));
+                    const mon = new StandardShooting(this, monster.x, monster.y, monster.range, monster.speed, monster.mode, monster.points, spriteData);
+                    mon.setShouldTurn(monster.shouldTurn);
+                    mon.randomizeMagicDustDrop(20);
+                    this.monsters.push(mon);
+                    if (monster.x > this.player.x) {
+                        this.monsterStars.push(new MonsterStar(monster.x, monster.y, monster.range, monster.speed, DirectionH.LEFT, this));
+                    } else {
+                        this.monsterStars.push(new MonsterStar(monster.x, monster.y, monster.range, monster.speed, DirectionH.RIGHT, this));
+                    }
+
                 } else {
-                    this.monsters.push(new Standard(this, monster.x, monster.y, monster.range, monster.speed, monster.mode, monster.points, spriteData));
+                    const mon = new Standard(this, monster.x, monster.y, monster.range, monster.speed, monster.mode, monster.points, spriteData);
+                    mon.randomizeMagicDustDrop(20);
+                    this.monsters.push(mon);
                 }
             } else if (monster.type === 'wasp') {
                 const spriteData = monsterSprites.wasp;
@@ -148,14 +164,6 @@ export default class Game {
         cancelAnimationFrame(this.gameLoop);
     }
 
-    renderCheckpoints() {
-        this.checkpoints.forEach(checkpoint => {
-            if (true) {
-                checkpoint.render();
-            }
-        });
-    }
-
     handleChekpointReach() {
         this.checkpoints.forEach(checkpoint => {
             if (Math.abs(this.player.x - checkpoint.x) <= 5 && !checkpoint.isActive) {
@@ -167,9 +175,20 @@ export default class Game {
         });
     }
 
+    disableMonsterStarRespawn(x: number, y: number) {
+        const star = this.monsterStars.find(star => star.baseX === x && star.baseY === y);
+        star.shouldRespawn = false;
+    }
+
     makeCheckpointsInactive() {
         this.checkpoints.forEach(checkpoint => {
             checkpoint.isActive = false;
+        });
+    }
+
+    renderCheckpoints() {
+        this.checkpoints.forEach(checkpoint => {
+            checkpoint.render();
         });
     }
 
@@ -178,12 +197,14 @@ export default class Game {
         this.monsters.forEach(monster => monster.update(dt));
         this.magicDusts.forEach(magicDust => magicDust.update(dt));
         this.checkpoints.forEach(checkpoint => checkpoint.update(dt));
+        this.monsterStars.forEach(star => star.update(dt));
         this.player.update(dt);
         this.map.update(dt);
         this.map.render();
         this.monsters.forEach(monster => monster.render());
         this.renderCheckpoints();
         this.magicDusts.forEach(magicDust => magicDust.render());
+        this.monsterStars.forEach(star => star.render());
         this.player.render();
         this.statsPanel.render();
     }
