@@ -67,7 +67,7 @@ export default class StatsPanel {
         } else if (textSprite.name === 'magic') {
             value = NumberFormatter.padWithZeroes(this.game.magic, this.MAGIC_DIGITS);
         } else if (textSprite.name === '1up') {
-            value = NumberFormatter.padWithZeroes(this.game.up, this.UP_DIGITS);
+            value = NumberFormatter.padWithZeroes(this.game.triesLeft, this.UP_DIGITS);
             value = 'x' + value;
         }
 

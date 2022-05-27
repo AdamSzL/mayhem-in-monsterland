@@ -92,23 +92,27 @@ export default class MonsterStar {
             if (this.peakAnimationSpriteIndex >= this.PEAK_SPRITE_COUNT) {
                 this.isPresent = false;
                 setTimeout(() => {
-                    const monster = this.game.monsters.find(monster => monster.x === this.baseX && monster.y === this.baseY);
-                    if (monster.directionH === DirectionH.RIGHT) {
-                        this.direction = DirectionH.RIGHT;
-                        this.x = this.baseX + Monster.BASE_WIDTH;
-                    } else if (monster.directionH === DirectionH.LEFT) {
-                        this.direction = DirectionH.LEFT;
-                        this.x = this.baseX - Monster.BASE_WIDTH;
-                    }
-                    this.peakAnimationSpriteIndex = 0;
-                    this.currentSpriteIndex = 0;
-                    if (this.shouldRespawn) {
-                        this.isPresent = true;
-                    }
-                    this.isAtPeak = false;
+                    this.respawn();
                 }, MonsterStar.SPAWN_TIMEOUT);
             }
         }
+    }
+
+    respawn() {
+        const monster = this.game.monsters.find(monster => monster.x === this.baseX && monster.y === this.baseY);
+        if (monster.directionH === DirectionH.RIGHT) {
+            this.direction = DirectionH.RIGHT;
+            this.x = this.baseX + Monster.BASE_WIDTH;
+        } else if (monster.directionH === DirectionH.LEFT) {
+            this.direction = DirectionH.LEFT;
+            this.x = this.baseX - Monster.BASE_WIDTH;
+        }
+        this.peakAnimationSpriteIndex = 0;
+        this.currentSpriteIndex = 0;
+        if (this.shouldRespawn) {
+            this.isPresent = true;
+        }
+        this.isAtPeak = false;
     }
 
     render() {

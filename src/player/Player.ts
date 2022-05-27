@@ -1,11 +1,6 @@
 import Game from '../game/Game'
 import playerSprites from '../../json/playerSprites.json'
 import { PlayerMovementController, DirectionH, DirectionV } from './PlayerMovementController';
-import { Ramp } from '../map/Map';
-import Checkpoint from '../map/Checkpoint';
-import Monster from '../monster/Monster';
-import MagicDust from '../game/MagicDust';
-import MonsterStar from '../monster/MonsterStar';
 
 export interface PlayerSprite {
     x: number,
@@ -13,9 +8,21 @@ export interface PlayerSprite {
 }
 
 export default class Player {
+    readonly SPRITE_COUNT: number = 8
+    readonly SPECIAL_ANIM_SPRITE_COUNT: number = 5
+    readonly HIT_ANIM_SPRITE_COUNT: number = 2
+    readonly HIT_ANIM_Y: number = 6
+    readonly HIT_ANIM_TIME: number = 3000
+    readonly FALL_ANIM_HEIGHT: number = 4
+    readonly FALL_ANIM_TOP_TIMEOUT: number = 200
+    static readonly DEFAULT_X: number = 408
+    static readonly DEFAULT_Y: number = 9
+
     readonly TOP_OFFSET = Game.PLAYER_WIDTH - Game.PLAYER_HEIGHT
 
-    x: number = 588
+    lives: number = 2
+
+    x: number = 408
     y: number = 9
 
     vx: number = 20
@@ -25,13 +32,17 @@ export default class Player {
     height: number = 84
 
     shouldRender: boolean = true
+    shouldRunFallAnimation: boolean = false
+    fallAnimStartY: number
+    fallAnimDir: DirectionV = DirectionV.UP
+    fallAnimSpeed: number = 30
 
     sprite: HTMLImageElement
     game: Game
 
-    playfield: HTMLCanvasElement = document.querySelector('canvas')
-
     currentPosIndex: number = 0
+    specialAnimIndex: number = 0
+    hitAnimIndex: number = 0
 
     spriteChangeSpeed: number = 20
 
@@ -43,6 +54,9 @@ export default class Player {
     isFlying: boolean = false
     isDucking: boolean = false
     isDuckFalling: boolean = false
+    shouldRunSpecialAnim: boolean = false
+    shouldRunHitAnimation: boolean = false
+    shouldUpdate: boolean = true
 
     jumpStartY: number
     duckFallStartY: number
@@ -78,97 +92,89 @@ export default class Player {
     }
 
     update(dt: number) {
-        this.checkForMonsterStarsCollisions();
-        this.checkForMonsterCollisions();
-        this.checkForMagicDustsCollisions();
-        const ramp = this.handleRamps();
-        if (!this.isFlying && ramp) {
-            const xOffset = this.x - ramp.x;
-            const width = (ramp.type === 'up' ? xOffset : ramp.width - xOffset);
-            const height = width / 2;
-            const yOffset = ramp.height - height;
-            this.y = ramp.y + yOffset - 3;
-        } else {
-            if (this.shouldGravityWork) {
-                this.handleGravity();
-            }
-
-            if (this.movementController.isLeftBeingHolded && !this.isMoving && !this.movementController.checkIfBlocked('left') && !this.isDucking) {
-                this.isMoving = true;
-            } else if (this.movementController.isRightBeingHolded && !this.isMoving && !this.movementController.checkIfBlocked('right') && !this.isDucking) {
-                this.isMoving = true;
-            }
-
-            if (this.directionH === DirectionH.RIGHT && this.isMoving && this.movementController.checkIfBlocked('right') && !this.checkIfXAtRamp()) {
-                this.x = this.movementController.roundCoord(this.x, 'h');
-                this.isMoving = false;
-            } else if (this.directionH === DirectionH.LEFT && this.isMoving && this.movementController.checkIfBlocked('left') && !this.checkIfXAtRamp()) {
-                this.x = this.movementController.roundCoord(this.x, 'h');
-                this.isMoving = false;
-            }
-
-            if (this.directionV === DirectionV.UP) {
-                if (this.movementController.checkIfBlocked('top')) {
-                    if (this.movementController.roundCoord(this.y, 'v') > 0) {
-                        this.isBeingBlocked = true;
-                        setTimeout(() => {
-                            this.isBeingBlocked = false;
-                        }, 100);
-                    }
-                    this.game.jumpHeight = Game.BASE_JUMP_HEIGHT;
-                    this.y = this.movementController.roundCoord(this.y, 'v');
-                    this.directionV = DirectionV.NONE;
-                    this.shouldGravityWork = false;
+        if (this.shouldRunFallAnimation) {
+            if (this.y > (Game.PLAYFIELD_HEIGHT / Game.CELL_SIZE)) {
+                this.shouldRunFallAnimation = false;
+                this.isFlying = false;
+                this.handleDeath();
+            } else {
+                if ((this.y < this.fallAnimStartY - this.FALL_ANIM_HEIGHT || this.y <= 0) && this.fallAnimDir === DirectionV.UP) {
+                    this.fallAnimSpeed = 1;
                     setTimeout(() => {
-                        this.directionV = DirectionV.DOWN;
-                    }, 200);
-                } else if (this.isFlying && ((Math.abs(this.y - this.jumpStartY) >= this.game.jumpHeight))) {
-                    this.game.jumpHeight = Game.BASE_JUMP_HEIGHT;
-                    this.directionV = DirectionV.NONE;
-                    this.shouldGravityWork = false;
-                    setTimeout(() => {
-                        this.directionV = DirectionV.DOWN;
-                    }, 200);
-
-                } else {
-                    this.y -= (dt * this.jumpSpeed);
+                        this.fallAnimSpeed = 30;
+                    }, this.FALL_ANIM_TOP_TIMEOUT);
+                    this.fallAnimDir = DirectionV.DOWN;
                 }
-            } else if (this.directionV === DirectionV.DOWN) {
-                if (this.y >= this.game.maps[this.game.currentLevel].length - (Game.PLAYER_WIDTH / Game.CELL_SIZE) && this.y < this.game.maps[this.game.currentLevel].length) {
-                    this.isMoving = false;
-                    document.onkeydown = () => false;
-                    document.onkeyup = () => false;
-                    this.y += dt * this.jumpSpeed;
-                } else if (this.y >= this.game.maps[this.game.currentLevel].length) {
-                    this.shouldRender = false;
-                } else if (this.isDuckFalling && Math.abs(this.y - this.duckFallStartY) >= 3) {
-                    this.isDuckFalling = false;
-                } else if (this.movementController.checkIfBlocked('bottom')) {
-                    this.y = this.movementController.roundCoord(this.y, 'v');
-                    this.directionV = DirectionV.NONE;
-                    this.isFlying = false;
-                    this.isDuckFalling = false;
-                    this.shouldGravityWork = true;
-                    if (this.isDucking && (!this.movementController.isBottomBeingHolded || this.movementController.isTopBeingHolded)) {
-                        this.isDucking = false;
-                        this.currentPosIndex = 0;
 
-                        if (this.movementController.isRightBeingHolded && !this.movementController.isLeftBeingHolded && this.directionH === DirectionH.LEFT) {
-                            this.directionH = DirectionH.RIGHT;
-                        } else if (this.movementController.isLeftBeingHolded && !this.movementController.isRightBeingHolded && this.directionH === DirectionH.RIGHT) {
-                            this.directionH = DirectionH.LEFT;
-                        }
-                    } else if (!this.isDucking && this.movementController.isBottomBeingHolded && !this.movementController.isTopBeingHolded) {
-                        this.isMoving = false;
-                        this.isDucking = true;
-                    }
-                } else {
-                    this.y += (dt * this.jumpSpeed);
+                if (this.fallAnimDir === DirectionV.UP) {
+                    this.y -= (dt * this.fallAnimSpeed);
+                } else if (this.fallAnimDir === DirectionV.DOWN) {
+                    this.y += (dt * this.fallAnimSpeed);
                 }
             }
+        } else if (this.shouldUpdate) {
+            this.checkForMonsterStarsCollisions();
+            this.checkForMonsterCollisions();
+            this.checkForMagicDustsCollisions();
+            const ramp = this.movementController.handleRamps();
+            if (!this.isFlying && ramp) {
+                const xOffset = this.x - ramp.x;
+                const width = (ramp.type === 'up' ? xOffset : ramp.width - xOffset);
+                const height = width / 2;
+                const yOffset = ramp.height - height;
+                this.y = ramp.y + yOffset - 3;
+            } else {
+                if (this.shouldGravityWork) {
+                    this.movementController.handleGravity();
+                }
+
+                if (this.movementController.isLeftBeingHolded && !this.isMoving && !this.movementController.checkIfBlocked('left') && !this.isDucking) {
+                    this.isMoving = true;
+                } else if (this.movementController.isRightBeingHolded && !this.isMoving && !this.movementController.checkIfBlocked('right') && !this.isDucking) {
+                    this.isMoving = true;
+                }
+
+                this.handleBlocked();
+
+                if (this.directionV === DirectionV.UP) {
+                    this.movementController.handleUpDirection(dt);
+                } else if (this.directionV === DirectionV.DOWN) {
+                    this.movementController.handleDownDirection(dt);
+                }
+            }
+
+            this.updateSprite(dt);
         }
+    }
 
-        this.updateSprite(dt);
+    handleDeath() {
+        setTimeout(() => {
+            if (this.game.triesLeft === 0) {
+                if (this.game.continuesLeft === 0) {
+                    this.game.shouldRenderGameOverScreen = true;
+                    console.log('game over');
+                    //zapisać score do localstorage
+                } else {
+                    this.game.shouldRenderContinueScreen = true;
+                    this.game.continueScreen.continues = this.game.continuesLeft;
+                    this.game.continuesLeft--;
+                    this.game.triesLeft = 3;
+                }
+            } else {
+                this.game.shouldRenderLevelScreen = true;
+                this.game.triesLeft--;
+            }
+        }, Game.PLAYER_DEAD_TIMEOUT);
+    }
+
+    handleBlocked() {
+        if (this.directionH === DirectionH.RIGHT && this.isMoving && this.movementController.checkIfBlocked('right') && !this.movementController.checkIfXAtRamp()) {
+            this.x = this.movementController.roundCoord(this.x, 'h');
+            this.isMoving = false;
+        } else if (this.directionH === DirectionH.LEFT && this.isMoving && this.movementController.checkIfBlocked('left') && !this.movementController.checkIfXAtRamp()) {
+            this.x = this.movementController.roundCoord(this.x, 'h');
+            this.isMoving = false;
+        }
     }
 
     updateSprite(dt: number) {
@@ -178,58 +184,77 @@ export default class Player {
             this.currentPosIndex += (dt * this.spriteChangeSpeed);
         }
 
-        if (this.currentPosIndex >= 8) {
+        if (this.currentPosIndex >= this.SPRITE_COUNT) {
             this.currentPosIndex = 0;
         }
-    }
 
-    handleGravity() {
-        if (this.directionV === DirectionV.NONE) {
-            let permeableBlocks: (string | number)[] = [0];
-            if (this.movementController.isFireBeingHolded && this.isDucking) {
-                this.isDuckFalling = true;
-                this.duckFallStartY = this.y;
-            }
-            if (this.isDuckFalling) {
-                permeableBlocks = [0, 2, 3];
-            }
-            const diffFloor = Math.abs(this.y - Math.floor(this.y));
-            const diffCeil = Math.abs(this.y - Math.ceil(this.y));
-            const x = this.movementController.roundCoord(this.x, 'h');
-            const y = (diffFloor <= diffCeil ? Math.floor(this.y) : Math.ceil(this.y)) + 3;
-            if (y < this.game.maps[this.game.currentLevel].length - 1) {
-                const blocksUnder = [this.game.maps[this.game.currentLevel][y][x], this.game.maps[this.game.currentLevel][y][x + 1], this.game.maps[this.game.currentLevel][y][x + 2]];
+        if (this.shouldRunSpecialAnim) {
+            this.specialAnimIndex += (dt * this.spriteChangeSpeed);
 
-                if (permeableBlocks.includes(blocksUnder[0]) && permeableBlocks.includes(blocksUnder[1]) && permeableBlocks.includes(blocksUnder[2])) {
-                    this.isFlying = true;
-                    this.directionV = DirectionV.DOWN;
-                } else {
-                    this.isDuckFalling = false;
-                    this.y = this.movementController.roundCoord(this.y, 'v');
-                }
+            if (this.specialAnimIndex > this.SPECIAL_ANIM_SPRITE_COUNT) {
+                this.shouldRunSpecialAnim = false;
+                this.specialAnimIndex = 0;
+            }
+        }
+
+        if (this.shouldRunHitAnimation) {
+            this.hitAnimIndex += (dt * this.spriteChangeSpeed / 2);
+
+            if (this.hitAnimIndex > this.HIT_ANIM_SPRITE_COUNT) {
+                this.hitAnimIndex = 0;
             }
         }
     }
 
-    handleRamps(): (Ramp | null) {
-        if (this.x >= 548 && this.x <= 554 && this.y === 17) {
-            return null;
+    spawnAtCheckpoint() {
+        this.currentPosIndex = 0;
+        this.shouldUpdate = true;
+        this.shouldRender = true;
+        this.lives = 2;
+        this.game.startTime = Date.now();
+        //dodać animacje wjazdu (x)
+        const checkpoint = this.game.checkpoints.find(checkpoint => checkpoint.isActive);
+        if (checkpoint) {
+            this.x = checkpoint.x;
+            this.y = checkpoint.y;
+        } else {
+            this.x = Player.DEFAULT_X;
+            this.y = Player.DEFAULT_Y;
         }
-        const ramps = this.game.map.ramps;
-        const ramp = ramps.find(ramp => (this.x >= ramp.x && this.x < ramp.x + ramp.width && this.y >= ramp.y - 3 && this.y < ramp.y + ramp.height));
-        return ramp || null;
+        this.directionH = DirectionH.RIGHT;
+        this.directionV = DirectionV.NONE;
+        this.game.map.x = this.x - this.game.MAP_OFFSET;
     }
 
-    checkIfXAtRamp(): boolean {
-        const ramps = this.game.map.ramps;
-        const ramp = ramps.find(ramp => (this.x >= ramp.x && this.x < ramp.x + ramp.width));
-        return (ramp ? true : false);
+    runFallAnimation() {
+        this.movementController.removeListeners();
+        this.movementController.resetHoldedKeys();
+        this.fallAnimDir = DirectionV.UP;
+        this.shouldRunFallAnimation = true;
+        this.shouldUpdate = false;
+        this.isFlying = true;
+        this.isMoving = false;
+        this.fallAnimStartY = this.y;
+    }
+
+    handleBeingHit() {
+        if (!this.shouldRunHitAnimation) {
+            this.lives--;
+            if (this.lives === 0) {
+                this.runFallAnimation();
+            } else {
+                this.shouldRunHitAnimation = true;
+            }
+            setTimeout(() => {
+                this.shouldRunHitAnimation = false;
+            }, this.HIT_ANIM_TIME);
+        }
     }
 
     checkForMonsterCollisions() {
         this.game.monsters.forEach(monster => {
             if (Math.abs(this.x - monster.x) <= 5 && monster.isAlive) {
-                if (this.checkIfCollides(monster)) {
+                if (this.movementController.checkIfCollides(monster)) {
                     if (this.directionV === DirectionV.DOWN && (monster.y - this.y >= 2)) {
                         this.jumpStartY = this.y;
                         this.isFlying = true;
@@ -239,14 +264,14 @@ export default class Player {
                         this.game.score += monster.points;
                         monster.isAnimationRunning = true;
                         monster.currentSpriteIndex = 0;
-                        if (monster.mode === "shooting") {
+                        if (monster.mode === 'shooting') {
                             this.game.disableMonsterStarRespawn(monster.x, monster.y);
                         }
                         // setTimeout(() => {
                         //     monster.isAlive = true;
                         // }, monster.RESPAWN_TIMEOUT);
                     } else {
-                        console.log('tracisz hp');
+                        this.handleBeingHit();
                     }
                 }
             }
@@ -255,7 +280,8 @@ export default class Player {
 
     checkForMagicDustsCollisions() {
         this.game.magicDusts.forEach(magicDust => {
-            if (this.checkIfCollides(magicDust)) {
+            if (this.movementController.checkIfCollides(magicDust)) {
+                this.shouldRunSpecialAnim = true;
                 this.game.score += magicDust.POINTS;
                 this.game.magic--;
                 if (this.game.magic === 0) {
@@ -268,23 +294,14 @@ export default class Player {
 
     checkForMonsterStarsCollisions() {
         this.game.monsterStars.forEach(star => {
-            if (this.checkIfCollides(star) && star.isPresent && !star.isAtPeak) {
-                console.log('z gwiazeczka');
+            if (this.movementController.checkIfCollides(star) && star.isPresent && !star.isAtPeak) {
+                this.handleBeingHit();
             }
         });
     }
 
-    checkIfCollides(entity: (Monster | MagicDust | Checkpoint | MonsterStar)) {
-        const width = this.width / Game.CELL_SIZE;
-        const height = this.height / Game.CELL_SIZE;
-        const entityWidth = entity.width / Game.CELL_SIZE;
-        const entityHeight = entity.height / Game.CELL_SIZE;
-
-        return (this.x < entity.x + entityWidth && this.x + width > entity.x && this.y < entity.y + entityHeight && height + this.y > entity.y);
-    }
-
     render() {
-        const ctx = this.playfield.getContext('2d');
+        const ctx = this.game.playfield.getContext('2d');
         const destX = (this.x - this.game.map.x) * Game.CELL_SIZE;
         const destY = this.y * Game.CELL_SIZE + this.TOP_OFFSET;
         let x: number, y: number
@@ -303,7 +320,14 @@ export default class Player {
             ({ x, y } = this.leftSprites['normal'][Math.floor(this.currentPosIndex)]);
         }
         if (this.shouldRender) {
-            ctx.drawImage(this.sprite, x, y, this.width, this.height, destX, destY, this.width, this.height);
+            if (this.shouldRunSpecialAnim) {
+                const specialSpriteInd = Math.floor(this.specialAnimIndex);
+                ctx.drawImage(this.sprite, x, this.height + specialSpriteInd * this.height, this.width, this.height, destX, destY, this.width, this.height);
+            } else if (this.shouldRunHitAnimation && Math.floor(this.hitAnimIndex) === 0) {
+                ctx.drawImage(this.sprite, x, this.HIT_ANIM_Y * this.height, this.width, this.height, destX, destY, this.width, this.height);
+            } else {
+                ctx.drawImage(this.sprite, x, y, this.width, this.height, destX, destY, this.width, this.height);
+            }
         }
     }
 }

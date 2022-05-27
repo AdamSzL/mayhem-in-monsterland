@@ -3,6 +3,8 @@ import Game from './Game';
 export default class MagicDust {
     static sprite: HTMLImageElement
 
+    static readonly DROP_DELAY: number = 200
+
     readonly SPRITE_COUNT: number = 9
     readonly POINTS: number = 200
 
