@@ -319,11 +319,6 @@ export class PlayerMovementController {
         }
     }
 
-    runFallingAnimation() {
-        const targetY = this.player.y + (this.player.width / Game.CELL_SIZE);
-        console.log(this.player.y);
-    }
-
     handleRamps(): (Ramp | null) {
         if (this.player.x >= 548 && this.player.x <= 554 && this.player.y === 17) {
             return null;

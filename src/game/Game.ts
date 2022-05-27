@@ -61,6 +61,7 @@ export default class Game {
     shouldRenderLevelScreen: boolean = false
     shouldRenderGameOverScreen: boolean = false
     shouldRenderContinueScreen: boolean = false
+    canRunTimeOutAnim: boolean = true
 
     playfield: HTMLCanvasElement = document.querySelector('canvas')
 
@@ -168,21 +169,22 @@ export default class Game {
         this.lastTime = now;
         this.updateTimeLeft();
 
-        if (this.timeLeft > 0) {
-            if (this.shouldRenderLevelScreen) {
-                this.levelScreen.show();
-            } else if (this.shouldRenderContinueScreen) {
-                this.continueScreen.continues = this.continuesLeft;
-                this.continueScreen.show();
-            } else if (this.shouldRenderGameOverScreen) {
-                this.gameOverScreen.show();
-            } else {
-                this.update(dt);
-                this.render();
-                requestAnimationFrame(now => this.frame(now));
-            }
+        if (this.shouldRenderLevelScreen) {
+            this.levelScreen.show();
+        } else if (this.shouldRenderContinueScreen) {
+            this.continueScreen.continues = this.continuesLeft;
+            this.continueScreen.show();
+        } else if (this.shouldRenderGameOverScreen) {
+            this.gameOverScreen.show();
         } else {
-            console.log('lose');
+            this.update(dt);
+            this.render();
+            requestAnimationFrame(now => this.frame(now));
+        }
+
+        if (this.timeLeft <= 0 && this.canRunTimeOutAnim) {
+            this.canRunTimeOutAnim = false;
+            this.player.runFallAnimation();
         }
     }
 
@@ -194,6 +196,9 @@ export default class Game {
     updateTimeLeft() {
         const secondsPassed = Math.floor(((Date.now() - this.startTime) / 1000));
         this.timeLeft = this.totalSeconds - secondsPassed;
+        if (this.timeLeft < 0) {
+            this.timeLeft = 0;
+        }
     }
 
     handleChekpointReach() {
@@ -250,6 +255,7 @@ export default class Game {
         this.shouldRenderLevelScreen = false;
         this.shouldRenderGameOverScreen = false;
         this.shouldRenderContinueScreen = false;
+        this.canRunTimeOutAnim = true;
         this.player.movementController.restoreListeners();
         requestAnimationFrame(now => this.frame(now));
     }

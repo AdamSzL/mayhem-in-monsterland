@@ -227,6 +227,7 @@ export default class Player {
     }
 
     runFallAnimation() {
+        console.log('staring fall animation');
         this.movementController.removeListeners();
         this.movementController.resetHoldedKeys();
         this.fallAnimDir = DirectionV.UP;
