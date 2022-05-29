@@ -20,6 +20,8 @@ import GameOverScreen from '../screens/GameOverScreen';
 import ContinueScreen from '../screens/ContinueScreen';
 import Screen from '../screens/Screen';
 import LevelScreen from '../screens/LevelScreen';
+import FinishScreen from '../screens/FinishScreen';
+import GameScreen from '../screens/GameScreen';
 
 
 export default class Game {
@@ -38,6 +40,9 @@ export default class Game {
     static readonly BASE_JUMP_HEIGHT: number = 8
     static readonly MAGIC_DUST_DROP_CHANCE: number = 30
     static readonly PLAYER_DEAD_TIMEOUT: number = 1000
+    static readonly FINISH_BLOCK_START_X: number = 476
+    static readonly FINISH_BLOCK_END_X: number = 480
+    static readonly FINISH_BLOCK_OFFSET: number = 5
 
     readonly MAP_OFFSET: number = 17
 
@@ -61,6 +66,8 @@ export default class Game {
     shouldRenderLevelScreen: boolean = false
     shouldRenderGameOverScreen: boolean = false
     shouldRenderContinueScreen: boolean = false
+    shouldRenderFinishScreen: boolean = false
+    shouldRenderGameScreen: boolean = false
     canRunTimeOutAnim: boolean = true
 
     playfield: HTMLCanvasElement = document.querySelector('canvas')
@@ -72,6 +79,8 @@ export default class Game {
     levelScreen: LevelScreen
     gameOverScreen: GameOverScreen
     continueScreen: ContinueScreen
+    finishScreen: FinishScreen
+    gameScreen: GameScreen
 
 
     shouldRunNextFrame: boolean = true
@@ -89,7 +98,7 @@ export default class Game {
 
     async loadSprites() {
         const spritesLoader = new SpritesLoader();
-        const [map, score, magic, time, up, stars, numbers, player, monsterSprite, monsterAnimationSprite, monsterStarAnimationSprite, starsSprite, starsAnimationSprite, checkpointInactiveSprite, checkpointActiveSprite, magicDustSprite, levelScreen, continueScreen, gameOverScreen] = await Promise.all(spritesLoader.load());
+        const [map, score, magic, time, up, stars, numbers, player, monsterSprite, monsterAnimationSprite, monsterStarAnimationSprite, starsSprite, starsAnimationSprite, checkpointInactiveSprite, checkpointActiveSprite, magicDustSprite, levelScreen, continueScreen, gameOverScreen, finishScreen, gameScreen, continuesDigits] = await Promise.all(spritesLoader.load());
         MonsterStar.sprite = starsSprite;
         MonsterStar.peakAnimationSprite = starsAnimationSprite;
         MagicDust.sprite = magicDustSprite;
@@ -99,12 +108,12 @@ export default class Game {
         this.statsPanel = new StatsPanel(this, [score, magic, time, up, stars, numbers]);
         this.map = new Map(this, map);
         this.player = new Player(this, player);
-        this.initScreens(levelScreen, continueScreen, gameOverScreen);
+        this.initScreens(levelScreen, continueScreen, gameOverScreen, finishScreen, gameScreen, continuesDigits, numbers);
         this.spawnMonsters();
         this.initCheckpoints(checkpointInactiveSprite, checkpointActiveSprite);
     }
 
-    async start() {
+    start() {
         this.clearCanvas();
         this.player.initController();
 
@@ -113,10 +122,23 @@ export default class Game {
         requestAnimationFrame(now => this.frame(now));
     }
 
-    initScreens(levelScreen: HTMLImageElement, continueScreen: HTMLImageElement, gameOverScreen: HTMLImageElement) {
+    restart() {
+        this.score = 0;
+        this.magic = 10;
+        this.continuesLeft = 3;
+        this.triesLeft = 3;
+        this.magicDusts = [];
+        this.checkpoints.forEach(checkpoint => { checkpoint.isActive = false });
+        this.player.spawnAtCheckpoint();
+        this.start();
+    }
+
+    initScreens(levelScreen: HTMLImageElement, continueScreen: HTMLImageElement, gameOverScreen: HTMLImageElement, finishScreen: HTMLImageElement, gameScreen: HTMLImageElement, continuesDigits: HTMLImageElement, numbers: HTMLImageElement) {
         this.levelScreen = new LevelScreen(Game.PLAYFIELD_WIDTH, Game.PLAYFIELD_HEIGHT, levelScreen, this);
-        this.continueScreen = new ContinueScreen(Game.PLAYFIELD_WIDTH, Game.PLAYFIELD_HEIGHT, continueScreen, this);
+        this.continueScreen = new ContinueScreen(Game.PLAYFIELD_WIDTH, Game.PLAYFIELD_HEIGHT, continueScreen, this, continuesDigits);
         this.gameOverScreen = new GameOverScreen(Game.PLAYFIELD_WIDTH, Game.PLAYFIELD_HEIGHT, gameOverScreen, this);
+        this.finishScreen = new FinishScreen(Game.PLAYFIELD_WIDTH, Game.PLAYFIELD_HEIGHT, finishScreen, this);
+        this.gameScreen = new GameScreen(Game.PLAYFIELD_WIDTH, Game.PLAYFIELD_HEIGHT, gameScreen, this, numbers);
     }
 
     spawnMonsters() {
@@ -171,11 +193,16 @@ export default class Game {
 
         if (this.shouldRenderLevelScreen) {
             this.levelScreen.show();
+            console.log('showing level screen');
         } else if (this.shouldRenderContinueScreen) {
             this.continueScreen.continues = this.continuesLeft;
             this.continueScreen.show();
         } else if (this.shouldRenderGameOverScreen) {
             this.gameOverScreen.show();
+        } else if (this.shouldRenderFinishScreen) {
+            this.finishScreen.show();
+        } else if (this.shouldRenderGameScreen) {
+            this.gameScreen.showScreen('restart');
         } else {
             this.update(dt);
             this.render();
@@ -250,11 +277,24 @@ export default class Game {
         });
     }
 
+    saveScore() {
+        const score = localStorage.getItem('score');
+        if (score) {
+            if (this.score > parseInt(score)) {
+                localStorage.setItem('score', this.score.toString());
+            }
+        } else {
+            localStorage.setItem('score', this.score.toString());
+            this.score = 0;
+        }
+    }
+
     resume() {
         this.player.spawnAtCheckpoint();
         this.shouldRenderLevelScreen = false;
         this.shouldRenderGameOverScreen = false;
         this.shouldRenderContinueScreen = false;
+        this.shouldRenderFinishScreen = false;
         this.canRunTimeOutAnim = true;
         this.player.movementController.restoreListeners();
         requestAnimationFrame(now => this.frame(now));

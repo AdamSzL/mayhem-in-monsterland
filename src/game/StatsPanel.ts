@@ -4,7 +4,7 @@ import Game from './Game';
 import numberSprites from '../../json/numberSprites.json';
 import { NumberFormatter } from '../helpers/helpers';
 
-interface NumberSprite {
+export interface NumberSprite {
     x: number,
     y: number,
     width: number,

@@ -152,13 +152,11 @@ export default class Player {
             if (this.game.triesLeft === 0) {
                 if (this.game.continuesLeft === 0) {
                     this.game.shouldRenderGameOverScreen = true;
-                    console.log('game over');
-                    //zapisać score do localstorage
+                    this.game.saveScore();
                 } else {
                     this.game.shouldRenderContinueScreen = true;
                     this.game.continueScreen.continues = this.game.continuesLeft;
-                    this.game.continuesLeft--;
-                    this.game.triesLeft = 3;
+                    this.game.triesLeft = 0; //3
                 }
             } else {
                 this.game.shouldRenderLevelScreen = true;
