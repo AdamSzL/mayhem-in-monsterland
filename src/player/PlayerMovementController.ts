@@ -205,7 +205,6 @@ export class PlayerMovementController {
             this.player.isMoving = false;
             let shouldBeDead: boolean = true;
             if (this.player.x >= Game.FINISH_BLOCK_START_X - Game.FINISH_BLOCK_OFFSET && this.player.x < Game.FINISH_BLOCK_END_X + Game.FINISH_BLOCK_OFFSET) {
-                console.log('meta');
                 if (this.player.game.magic === 0) {
                     shouldBeDead = false;
                 }
@@ -215,6 +214,7 @@ export class PlayerMovementController {
             if (shouldBeDead) {
                 this.player.handleDeath();
             } else {
+                this.player.game.saveScore();
                 this.player.game.shouldRenderFinishScreen = true;
             }
         } else if (this.player.isDuckFalling && Math.abs(this.player.y - this.player.duckFallStartY) >= 3) {

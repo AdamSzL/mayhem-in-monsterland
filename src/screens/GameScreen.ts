@@ -8,13 +8,23 @@ const numbersData: { [key: string]: NumberSprite } = numbers;
 
 export default class GameScreen extends Screen {
 
-    audio: HTMLAudioElement
+    audio: HTMLAudioElement = new Audio('audio/game-screen.wav');
 
     readonly SCORE_BASE_X: number = 370
     readonly SCORE_BASE_Y: number = 665
     readonly SCORE_TOTAL_DIGITS: number = 9
     readonly SIZE_MULTIPLIER: number = 1.5
     readonly DIGIT_GAP: number = 10
+    readonly SPRITE_COUNT: number = 5
+    readonly ANIM_INTERVAL: number = 800
+
+    readonly dx: number = 0
+    readonly dy: number = 0
+    sx: number = 0
+    readonly sy: number = 0
+
+    spriteAnimation: number
+    animSpriteIndex: number = 0
 
     score: number
     numbersSprite: HTMLImageElement
@@ -22,7 +32,6 @@ export default class GameScreen extends Screen {
     constructor(width: number, height: number, sprite: HTMLImageElement, game: Game, numbers: HTMLImageElement) {
         super(width, height, sprite, game);
         this.numbersSprite = numbers;
-        this.audio = new Audio('audio/game-screen.wav');
     }
 
     getHighestScore() {
@@ -35,16 +44,23 @@ export default class GameScreen extends Screen {
     }
 
     showScreen(mode: string) {
+        this.animSpriteIndex = 0;
         this.audio.play();
+        this.game.clearCanvas();
         this.getHighestScore();
-        document.onkeydown = (e: KeyboardEvent) => {
-            if (e.key === 'Enter' || (e.location === 3 && e.key === '0')) {
-                this.hideScreen(mode);
+        this.spriteAnimation = window.setInterval(() => {
+            this.animSpriteIndex++;
+            this.render();
+            if (this.animSpriteIndex === this.SPRITE_COUNT - 1) {
+                this.renderScore();
+                clearInterval(this.spriteAnimation);
+                document.onkeydown = (e: KeyboardEvent) => {
+                    if (e.key === 'Enter' || (e.location === 3 && e.key === '0')) {
+                        this.hideScreen(mode);
+                    }
+                }
             }
-        }
-        this.audio.addEventListener('ended', () => {
-            this.hideScreen(mode);
-        });
+        }, this.ANIM_INTERVAL);
         this.render();
     }
 
@@ -63,8 +79,8 @@ export default class GameScreen extends Screen {
 
     render() {
         const ctx = this.game.playfield.getContext('2d');
-        ctx.drawImage(this.sprite, 0, 0, this.width, this.height);
-        this.renderScore();
+        this.sx = this.animSpriteIndex * this.width;
+        ctx.drawImage(this.sprite, this.sx, this.sy, this.width, this.height, this.dx, this.dy, this.width, this.height);
     }
 
     renderScore() {

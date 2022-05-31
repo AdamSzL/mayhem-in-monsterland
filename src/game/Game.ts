@@ -53,7 +53,7 @@ export default class Game {
     score: number = 0
     totalSeconds: number = 250
     timeLeft: number = 250
-    magic: number = 10
+    magic: number = 0
     stars: number = 0
     startTime: number
     lastTime: number
@@ -127,6 +127,7 @@ export default class Game {
     start() {
         this.clearCanvas();
         this.resetMonsters();
+        this.resetMonsterStars();
         this.player.initController();
 
         this.startTime = Date.now();
@@ -352,6 +353,7 @@ export default class Game {
         this.player.spawnAtCheckpoint();
         this.restartAudio();
         this.resetMonsters();
+        this.resetMonsterStars();
         this.enableStarRespawn();
         this.shouldRenderLevelScreen = false;
         this.shouldRenderGameOverScreen = false;
@@ -364,6 +366,18 @@ export default class Game {
 
     resetMonsters() {
         this.monsters.forEach(monster => monster.reset());
+    }
+
+    resetMonsterStars() {
+        this.monsterStars.forEach(monsterStar => {
+            monsterStar.shouldRespawn = true;
+            monsterStar.peakAnimationSpriteIndex = 0;
+            monsterStar.currentSpriteIndex = 0;
+            monsterStar.x = monsterStar.baseX;
+            monsterStar.y = monsterStar.baseY;
+            monsterStar.isAtPeak = false;
+            monsterStar.isPresent = true;
+        });
     }
 
     update(dt: number) {

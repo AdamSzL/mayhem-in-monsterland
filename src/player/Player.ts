@@ -297,9 +297,6 @@ export default class Player {
                 if (this.game.magic > 0) {
                     this.game.magic--;
                 }
-                if (this.game.magic === 0) {
-                    console.log('magic 0');
-                }
                 monster.magicDust = null;
                 monster.hadMagicDustPicked = true;
             }

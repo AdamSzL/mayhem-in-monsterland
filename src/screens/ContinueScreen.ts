@@ -58,7 +58,6 @@ export default class ContinueScreen extends Screen {
     }
 
     render() {
-        console.log('continues: ' + this.continues);
         const ctx = this.game.playfield.getContext('2d');
         ctx.drawImage(this.sprite, Game.PLAYFIELD_WIDTH * this.spriteIndex, (this.shouldContinue ? 0 : Game.PLAYFIELD_HEIGHT), Game.PLAYFIELD_WIDTH, Game.PLAYFIELD_HEIGHT, 0, 0, Game.PLAYFIELD_WIDTH, Game.PLAYFIELD_HEIGHT);
         ctx.drawImage(this.numbersSprite, (this.continues - 1) * this.DIGIT_WIDTH, 0, this.DIGIT_WIDTH, this.DIGIT_HEIGHT, this.DIGIT_POS_X, this.DIGIT_POS_Y, this.DIGIT_WIDTH, this.DIGIT_HEIGHT);

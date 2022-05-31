@@ -6,9 +6,9 @@ export default class LoadingScreen extends Screen {
     readonly AFTER_TIMEOUT: number = 500
 
     sx: number = 0
-    sy: number = 0
-    dx: number = 0
-    dy: number = 0
+    readonly sy: number = 0
+    readonly dx: number = 0
+    readonly dy: number = 0
 
     spriteAnimation: number
 
