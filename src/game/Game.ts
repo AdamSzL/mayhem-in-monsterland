@@ -51,7 +51,7 @@ export default class Game {
     score: number = 0
     totalSeconds: number = 250
     timeLeft: number = 250
-    magic: number = 0
+    magic: number = 10
     stars: number = 0
     startTime: number
     lastTime: number
