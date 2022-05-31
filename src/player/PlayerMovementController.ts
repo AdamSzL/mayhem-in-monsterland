@@ -170,15 +170,15 @@ export class PlayerMovementController {
                     this.player.isBeingBlocked = false;
                 }, 100);
             }
-            this.player.game.jumpHeight = Game.BASE_JUMP_HEIGHT;
+            this.player.jumpHeight = this.player.BASE_JUMP_HEIGHT;
             this.player.y = this.roundCoord(this.player.y, 'v');
             this.player.directionV = DirectionV.NONE;
             this.player.shouldGravityWork = false;
             setTimeout(() => {
                 this.player.directionV = DirectionV.DOWN;
             }, 200);
-        } else if (this.player.isFlying && ((Math.abs(this.player.y - this.player.jumpStartY) >= this.player.game.jumpHeight))) {
-            this.player.game.jumpHeight = Game.BASE_JUMP_HEIGHT;
+        } else if (this.player.isFlying && ((Math.abs(this.player.y - this.player.jumpStartY) >= this.player.jumpHeight))) {
+            this.player.jumpHeight = this.player.BASE_JUMP_HEIGHT;
             this.player.directionV = DirectionV.NONE;
             this.player.shouldGravityWork = false;
             setTimeout(() => {
@@ -226,10 +226,10 @@ export class PlayerMovementController {
             this.player.isFlying = false;
             this.player.isDuckFalling = false;
             this.player.shouldGravityWork = true;
+            this.player.jumpHeight = this.player.BASE_JUMP_HEIGHT;
             if (this.player.isDucking && (!this.isBottomBeingHolded || this.isTopBeingHolded)) {
                 this.player.isDucking = false;
                 this.player.currentPosIndex = 0;
-
                 if (this.isRightBeingHolded && !this.isLeftBeingHolded && this.player.directionH === DirectionH.LEFT) {
                     this.player.directionH = DirectionH.RIGHT;
                 } else if (this.isLeftBeingHolded && !this.isRightBeingHolded && this.player.directionH === DirectionH.RIGHT) {

@@ -36,8 +36,6 @@ export default class Game {
     static readonly MAX_SPEED: number = 18
     static readonly BASE_SPEED: number = 6
     static readonly SPEED_MULTIPLIER: number = 20
-    static readonly MONSTER_KILLED_JUMP_HEIGHT: number = 3
-    static readonly BASE_JUMP_HEIGHT: number = 8
     static readonly MAGIC_DUST_DROP_CHANCE: number = 30
     static readonly PLAYER_DEAD_TIMEOUT: number = 1000
     static readonly FINISH_BLOCK_START_X: number = 476
@@ -58,7 +56,6 @@ export default class Game {
     startTime: number
     lastTime: number
     fps: number
-    jumpHeight: number = 8
     currentLevel: number = 1
     continuesLeft: number = 3
     triesLeft: number = 3
@@ -218,7 +215,6 @@ export default class Game {
         const dt = Math.abs((now - this.lastTime) / 1000);
 
         this.fps = Math.round(1 / dt);
-        this.updateFps();
 
         this.lastTime = now;
         this.updateTimeLeft();
@@ -244,11 +240,6 @@ export default class Game {
             this.canRunTimeOutAnim = false;
             this.player.runFallAnimation();
         }
-    }
-
-    updateFps() {
-        const fpsInfo = document.querySelector('.fps-info');
-        fpsInfo.innerHTML = this.fps.toString();
     }
 
     updateTimeLeft() {

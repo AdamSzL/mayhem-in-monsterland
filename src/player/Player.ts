@@ -21,6 +21,8 @@ export default class Player {
     readonly HIT_ANIM_TIME: number = 3000
     readonly FALL_ANIM_HEIGHT: number = 4
     readonly FALL_ANIM_TOP_TIMEOUT: number = 200
+    readonly MONSTER_KILLED_JUMP_HEIGHT: number = 3
+    readonly BASE_JUMP_HEIGHT: number = 8
     static readonly DEFAULT_X: number = 408
     static readonly DEFAULT_Y: number = 9
 
@@ -36,6 +38,8 @@ export default class Player {
 
     width: number = 96
     height: number = 84
+
+    jumpHeight: number = 8
 
     shouldRender: boolean = true
     shouldRunFallAnimation: boolean = false
@@ -269,7 +273,7 @@ export default class Player {
                         this.jumpStartY = this.y;
                         this.isFlying = true;
                         this.directionV = DirectionV.UP;
-                        this.game.jumpHeight = Game.MONSTER_KILLED_JUMP_HEIGHT;
+                        this.jumpHeight = this.MONSTER_KILLED_JUMP_HEIGHT;
                         monster.isAlive = false;
                         monster.magicDustX = monster.x;
                         monster.magicDustY = monster.y;

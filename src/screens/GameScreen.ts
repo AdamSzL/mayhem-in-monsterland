@@ -17,6 +17,7 @@ export default class GameScreen extends Screen {
     readonly DIGIT_GAP: number = 10
     readonly SPRITE_COUNT: number = 5
     readonly ANIM_INTERVAL: number = 800
+    readonly NUMBERS_SY: number = 24
 
     readonly dx: number = 0
     readonly dy: number = 0
@@ -91,7 +92,7 @@ export default class GameScreen extends Screen {
         for (let i = 0; i < this.SCORE_TOTAL_DIGITS; i++) {
             const numberData = numbersData[formattedScore[i]];
             const { x, y, width, height } = numberData;
-            ctx.drawImage(this.numbersSprite, x, y, width, height, dx, dy, width * this.SIZE_MULTIPLIER, height * this.SIZE_MULTIPLIER);
+            ctx.drawImage(this.numbersSprite, x, this.NUMBERS_SY, width, height, dx, dy, width * this.SIZE_MULTIPLIER, height * this.SIZE_MULTIPLIER);
             dx += (width * this.SIZE_MULTIPLIER + this.DIGIT_GAP);
         }
     }
