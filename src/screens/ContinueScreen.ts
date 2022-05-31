@@ -2,6 +2,8 @@ import Screen from './Screen';
 import Game from '../game/Game';
 
 export default class ContinueScreen extends Screen {
+    readonly audio: HTMLAudioElement = new Audio('audio/continue-screen.wav')
+
     readonly DIGIT_POS_X: number = 824
     readonly DIGIT_POS_Y: number = 506
     readonly SPRITE_COUNT: number = 10
@@ -23,6 +25,8 @@ export default class ContinueScreen extends Screen {
     }
 
     show() {
+        this.audio.currentTime = 0;
+        this.audio.play();
         this.render();
         this.animation = window.setInterval(() => {
             this.spriteIndex += 1;
@@ -38,6 +42,7 @@ export default class ContinueScreen extends Screen {
                 this.shouldContinue = true;
             } else if (e.key === 'Enter' || (e.location === 3 && e.key === '0')) {
                 clearInterval(this.animation);
+                this.audio.pause();
                 this.game.shouldRenderContinueScreen = false;
                 if (this.shouldContinue) {
                     this.game.continuesLeft--;

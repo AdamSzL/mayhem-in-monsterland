@@ -1,6 +1,8 @@
 import Game from '../game/Game'
 import playerSprites from '../../json/playerSprites.json'
 import { PlayerMovementController, DirectionH, DirectionV } from './PlayerMovementController';
+import Monster from '../monster/Monster';
+import MagicDust from '../game/MagicDust';
 
 export interface PlayerSprite {
     x: number,
@@ -8,6 +10,10 @@ export interface PlayerSprite {
 }
 
 export default class Player {
+    readonly JUMP_START_SOUND: HTMLAudioElement = new Audio('audio/jump-start.wav')
+    readonly JUMP_END_SOUND: HTMLAudioElement = new Audio('audio/jump-end.wav')
+    readonly BEING_HIT_SOUND: HTMLAudioElement = new Audio('audio/player-being-hit.wav')
+    readonly DEAD_SOUND: HTMLAudioElement = new Audio('audio/player-dead.wav')
     readonly SPRITE_COUNT: number = 8
     readonly SPECIAL_ANIM_SPRITE_COUNT: number = 5
     readonly HIT_ANIM_SPRITE_COUNT: number = 2
@@ -45,6 +51,7 @@ export default class Player {
     hitAnimIndex: number = 0
 
     spriteChangeSpeed: number = 20
+    hitAnimationSpeed: number = 10
 
     directionH: DirectionH = DirectionH.RIGHT
     directionV: DirectionV = DirectionV.NONE
@@ -97,6 +104,7 @@ export default class Player {
                 this.shouldRunFallAnimation = false;
                 this.isFlying = false;
                 this.handleDeath();
+                this.game.mainAudio.pause();
             } else {
                 if ((this.y < this.fallAnimStartY - this.FALL_ANIM_HEIGHT || this.y <= 0) && this.fallAnimDir === DirectionV.UP) {
                     this.fallAnimSpeed = 1;
@@ -148,6 +156,7 @@ export default class Player {
     }
 
     handleDeath() {
+        this.game.mainAudio.pause();
         setTimeout(() => {
             if (this.game.triesLeft === 0) {
                 if (this.game.continuesLeft === 0) {
@@ -196,7 +205,7 @@ export default class Player {
         }
 
         if (this.shouldRunHitAnimation) {
-            this.hitAnimIndex += (dt * this.spriteChangeSpeed / 2);
+            this.hitAnimIndex += (dt * this.hitAnimationSpeed);
 
             if (this.hitAnimIndex > this.HIT_ANIM_SPRITE_COUNT) {
                 this.hitAnimIndex = 0;
@@ -225,7 +234,6 @@ export default class Player {
     }
 
     runFallAnimation() {
-        console.log('staring fall animation');
         this.movementController.removeListeners();
         this.movementController.resetHoldedKeys();
         this.fallAnimDir = DirectionV.UP;
@@ -240,8 +248,10 @@ export default class Player {
         if (!this.shouldRunHitAnimation) {
             this.lives--;
             if (this.lives === 0) {
+                this.DEAD_SOUND.play();
                 this.runFallAnimation();
             } else {
+                this.BEING_HIT_SOUND.play();
                 this.shouldRunHitAnimation = true;
             }
             setTimeout(() => {
@@ -255,20 +265,20 @@ export default class Player {
             if (Math.abs(this.x - monster.x) <= 5 && monster.isAlive) {
                 if (this.movementController.checkIfCollides(monster)) {
                     if (this.directionV === DirectionV.DOWN && (monster.y - this.y >= 2)) {
+                        Monster.DEAD_SOUND.play();
                         this.jumpStartY = this.y;
                         this.isFlying = true;
                         this.directionV = DirectionV.UP;
                         this.game.jumpHeight = Game.MONSTER_KILLED_JUMP_HEIGHT;
                         monster.isAlive = false;
+                        monster.magicDustX = monster.x;
+                        monster.magicDustY = monster.y;
                         this.game.score += monster.points;
                         monster.isAnimationRunning = true;
                         monster.currentSpriteIndex = 0;
                         if (monster.mode === 'shooting') {
                             this.game.disableMonsterStarRespawn(monster.x, monster.y);
                         }
-                        // setTimeout(() => {
-                        //     monster.isAlive = true;
-                        // }, monster.RESPAWN_TIMEOUT);
                     } else {
                         this.handleBeingHit();
                     }
@@ -278,17 +288,22 @@ export default class Player {
     }
 
     checkForMagicDustsCollisions() {
-        this.game.magicDusts.forEach(magicDust => {
-            if (this.movementController.checkIfCollides(magicDust)) {
+        this.game.monsters.forEach(monster => {
+            const magicDust = monster.magicDust;
+            if (magicDust && this.movementController.checkIfCollides(magicDust)) {
+                MagicDust.PICK_SOUND.play();
                 this.shouldRunSpecialAnim = true;
                 this.game.score += magicDust.POINTS;
-                this.game.magic--;
+                if (this.game.magic > 0) {
+                    this.game.magic--;
+                }
                 if (this.game.magic === 0) {
                     console.log('magic 0');
                 }
-                this.game.magicDusts = this.game.magicDusts.filter(magicD => !(magicD.x === magicDust.x && magicD.y === magicDust.y));
+                monster.magicDust = null;
+                monster.hadMagicDustPicked = true;
             }
-        });
+        })
     }
 
     checkForMonsterStarsCollisions() {

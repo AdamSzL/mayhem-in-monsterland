@@ -8,6 +8,8 @@ const numbersData: { [key: string]: NumberSprite } = numbers;
 
 export default class GameScreen extends Screen {
 
+    audio: HTMLAudioElement
+
     readonly SCORE_BASE_X: number = 370
     readonly SCORE_BASE_Y: number = 665
     readonly SCORE_TOTAL_DIGITS: number = 9
@@ -20,6 +22,7 @@ export default class GameScreen extends Screen {
     constructor(width: number, height: number, sprite: HTMLImageElement, game: Game, numbers: HTMLImageElement) {
         super(width, height, sprite, game);
         this.numbersSprite = numbers;
+        this.audio = new Audio('audio/game-screen.wav');
     }
 
     getHighestScore() {
@@ -32,19 +35,30 @@ export default class GameScreen extends Screen {
     }
 
     showScreen(mode: string) {
+        this.audio.play();
         this.getHighestScore();
         document.onkeydown = (e: KeyboardEvent) => {
             if (e.key === 'Enter' || (e.location === 3 && e.key === '0')) {
-                if (mode === 'start') {
-                    this.game.shouldRenderLevelScreen = true;
-                    this.game.start();
-                } else if (mode === 'restart') {
-                    this.game.shouldRenderGameScreen = false;
-                    this.game.restart();
-                }
+                this.hideScreen(mode);
             }
         }
+        this.audio.addEventListener('ended', () => {
+            this.hideScreen(mode);
+        });
         this.render();
+    }
+
+    hideScreen(mode: string) {
+        this.audio.pause();
+        this.audio.currentTime = 0;
+        if (mode === 'start') {
+            this.game.shouldRenderLevelScreen = true;
+            this.game.start();
+        } else if (mode === 'restart') {
+            this.game.shouldRenderGameScreen = false;
+            this.game.shouldRenderLevelScreen = true;
+            this.game.restart();
+        }
     }
 
     render() {

@@ -18,10 +18,10 @@ import MonsterStar from '../monster/MonsterStar';
 import { DirectionH } from '../player/PlayerMovementController';
 import GameOverScreen from '../screens/GameOverScreen';
 import ContinueScreen from '../screens/ContinueScreen';
-import Screen from '../screens/Screen';
 import LevelScreen from '../screens/LevelScreen';
 import FinishScreen from '../screens/FinishScreen';
 import GameScreen from '../screens/GameScreen';
+import LoadingScreen from '../screens/LoadingScreen';
 
 
 export default class Game {
@@ -45,6 +45,8 @@ export default class Game {
     static readonly FINISH_BLOCK_OFFSET: number = 5
 
     readonly MAP_OFFSET: number = 17
+
+    mainAudio: HTMLAudioElement = new Audio('audio/main.wav')
 
     maps: { [key: string]: (string | number)[][] } = maps
 
@@ -76,6 +78,7 @@ export default class Game {
 
     player: Player
 
+    loadingScreen: LoadingScreen
     levelScreen: LevelScreen
     gameOverScreen: GameOverScreen
     continueScreen: ContinueScreen
@@ -87,18 +90,17 @@ export default class Game {
 
     monsters: Monster[] = []
     checkpoints: Checkpoint[] = []
-    magicDusts: MagicDust[] = []
     monsterStars: MonsterStar[] = []
 
     constructor() {
         const welcomeScreen = new WelcomeScreen(this);
         welcomeScreen.show();
-        this.loadSprites();
     }
 
     async loadSprites() {
         const spritesLoader = new SpritesLoader();
         const [map, score, magic, time, up, stars, numbers, player, monsterSprite, monsterAnimationSprite, monsterStarAnimationSprite, starsSprite, starsAnimationSprite, checkpointInactiveSprite, checkpointActiveSprite, magicDustSprite, levelScreen, continueScreen, gameOverScreen, finishScreen, gameScreen, continuesDigits] = await Promise.all(spritesLoader.load());
+
         MonsterStar.sprite = starsSprite;
         MonsterStar.peakAnimationSprite = starsAnimationSprite;
         MagicDust.sprite = magicDustSprite;
@@ -113,13 +115,36 @@ export default class Game {
         this.initCheckpoints(checkpointInactiveSprite, checkpointActiveSprite);
     }
 
+    showLoadingScreen() {
+        const loadingScreenImg = new Image();
+        loadingScreenImg.addEventListener('load', () => {
+            this.loadingScreen = new LoadingScreen(Game.PLAYFIELD_WIDTH, Game.PLAYFIELD_HEIGHT, loadingScreenImg, this);
+            this.loadingScreen.show();
+        });
+        loadingScreenImg.src = 'public/images/loading-screen-sprite.png';
+    }
+
     start() {
         this.clearCanvas();
+        this.resetMonsters();
         this.player.initController();
 
         this.startTime = Date.now();
         this.lastTime = performance.now();
+        if (this.shouldPlayAudio()) {
+            this.restartAudio();
+        }
         requestAnimationFrame(now => this.frame(now));
+    }
+
+    shouldPlayAudio() {
+        return !this.shouldRenderContinueScreen && !this.shouldRenderFinishScreen && !this.shouldRenderGameOverScreen && !this.shouldRenderGameScreen && !this.shouldRenderLevelScreen;
+    }
+
+    restartAudio() {
+        this.mainAudio.currentTime = 0;
+        this.mainAudio.loop = true;
+        this.mainAudio.play();
     }
 
     restart() {
@@ -127,9 +152,11 @@ export default class Game {
         this.magic = 10;
         this.continuesLeft = 3;
         this.triesLeft = 3;
-        this.magicDusts = [];
         this.checkpoints.forEach(checkpoint => { checkpoint.isActive = false });
         this.player.spawnAtCheckpoint();
+        this.resetMonsters();
+        this.enableStarRespawn();
+        this.monsters.forEach(monster => monster.hadMagicDustPicked = false);
         this.start();
     }
 
@@ -139,6 +166,10 @@ export default class Game {
         this.gameOverScreen = new GameOverScreen(Game.PLAYFIELD_WIDTH, Game.PLAYFIELD_HEIGHT, gameOverScreen, this);
         this.finishScreen = new FinishScreen(Game.PLAYFIELD_WIDTH, Game.PLAYFIELD_HEIGHT, finishScreen, this);
         this.gameScreen = new GameScreen(Game.PLAYFIELD_WIDTH, Game.PLAYFIELD_HEIGHT, gameScreen, this, numbers);
+    }
+
+    enableStarRespawn() {
+        this.monsterStars.forEach(star => star.shouldRespawn = true);
     }
 
     spawnMonsters() {
@@ -193,7 +224,6 @@ export default class Game {
 
         if (this.shouldRenderLevelScreen) {
             this.levelScreen.show();
-            console.log('showing level screen');
         } else if (this.shouldRenderContinueScreen) {
             this.continueScreen.continues = this.continuesLeft;
             this.continueScreen.show();
@@ -234,6 +264,8 @@ export default class Game {
                 if (this.player.movementController.checkIfCollides(checkpoint)) {
                     this.makeCheckpointsInactive();
                     checkpoint.isActive = true;
+                    Checkpoint.audio.currentTime = 0;
+                    Checkpoint.audio.play();
                 }
             }
         });
@@ -262,8 +294,14 @@ export default class Game {
                 monster.x = monster.startX;
                 monster.y = monster.startY;
                 monster.isAlive = true;
-                monster.dropsMagicDust = false;
-                monster.randomizeMagicDustDrop(Game.MAGIC_DUST_DROP_CHANCE);
+                if (monster.magicDust) {
+                    monster.magicDust = null;
+                } else {
+                    monster.dropsMagicDust = false;
+                    if (!monster.hadMagicDustPicked) {
+                        monster.randomizeMagicDustDrop(Game.MAGIC_DUST_DROP_CHANCE);
+                    }
+                }
                 const star = this.monsterStars.find(star => star.baseX === monster.x && star.baseY === monster.y);
                 if (star) {
                     monster.currentSpriteIndex = 1;
@@ -289,8 +327,32 @@ export default class Game {
         }
     }
 
+    canDropMagicDust(): boolean {
+        return this.magic - this.monsters.filter(monster => monster.magicDust).length > 0;
+    }
+
+    updateMagicDusts(dt: number) {
+        this.monsters.forEach(monster => {
+            if (monster.magicDust) {
+                monster.magicDust.update(dt);
+            }
+        });
+    }
+
+    renderMagicDusts() {
+        this.monsters.forEach(monster => {
+            if (monster.magicDust) {
+                monster.magicDust.render();
+            }
+        });
+    }
+
     resume() {
+        this.lastTime = performance.now();
         this.player.spawnAtCheckpoint();
+        this.restartAudio();
+        this.resetMonsters();
+        this.enableStarRespawn();
         this.shouldRenderLevelScreen = false;
         this.shouldRenderGameOverScreen = false;
         this.shouldRenderContinueScreen = false;
@@ -300,11 +362,15 @@ export default class Game {
         requestAnimationFrame(now => this.frame(now));
     }
 
+    resetMonsters() {
+        this.monsters.forEach(monster => monster.reset());
+    }
+
     update(dt: number) {
         this.respawnDeadMonsters();
         this.handleChekpointReach();
         this.monsters.forEach(monster => monster.update(dt));
-        this.magicDusts.forEach(magicDust => magicDust.update(dt));
+        this.updateMagicDusts(dt);
         this.checkpoints.forEach(checkpoint => checkpoint.update(dt));
         this.monsterStars.forEach(star => star.update(dt));
         this.player.update(dt);
@@ -315,7 +381,7 @@ export default class Game {
         this.map.render();
         this.monsters.forEach(monster => monster.render());
         this.renderCheckpoints();
-        this.magicDusts.forEach(magicDust => magicDust.render());
+        this.renderMagicDusts();
         this.monsterStars.forEach(star => star.render());
         this.player.render();
         this.statsPanel.render();

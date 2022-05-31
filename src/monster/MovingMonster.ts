@@ -4,6 +4,7 @@ import { Ramp } from '../map/Map';
 import Game from '../game/Game';
 
 export default class MovingMonster extends Monster {
+
     handleMovement(dt: number) {
         if (!this.isStanding) {
             if (this.directionH === DirectionH.RIGHT) {
@@ -35,6 +36,7 @@ export default class MovingMonster extends Monster {
             }
         }
     }
+
     handleRamps() {
         const ramp = this.checkIfAtRamp();
         if (ramp) {
@@ -45,11 +47,13 @@ export default class MovingMonster extends Monster {
             this.y = ramp.y + yOffset - 3;
         }
     }
+
     checkIfAtRamp(): (Ramp | null) {
         const ramps = this.game.map.ramps;
         const ramp = ramps.find(ramp => (this.x >= ramp.x && this.x < ramp.x + ramp.width && this.y >= ramp.y - 3 && this.y < ramp.y + ramp.height));
         return ramp || null;
     }
+
     updateMonsterData() {
         const spriteIndex = this.shouldSpriteIndexIncrease ? Math.floor(this.currentSpriteIndex) : Math.ceil(this.currentSpriteIndex);
         if (this.directionH === DirectionH.LEFT) {

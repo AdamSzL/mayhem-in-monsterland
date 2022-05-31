@@ -62,6 +62,7 @@ export class PlayerMovementController {
             this.player.duckFallStartY = this.player.y;
         }
         if (top && this.player.directionV === DirectionV.NONE && !this.isTopBeingHolded && !this.player.isFlying) {
+            this.player.JUMP_START_SOUND.play();
             this.player.directionV = DirectionV.UP;
             this.player.jumpStartY = this.player.y;
             this.player.isFlying = true;
@@ -210,6 +211,7 @@ export class PlayerMovementController {
                 }
             }
 
+            this.player.game.mainAudio.pause();
             if (shouldBeDead) {
                 this.player.handleDeath();
             } else {
@@ -218,6 +220,7 @@ export class PlayerMovementController {
         } else if (this.player.isDuckFalling && Math.abs(this.player.y - this.player.duckFallStartY) >= 3) {
             this.player.isDuckFalling = false;
         } else if (this.checkIfBlocked('bottom')) {
+            this.player.JUMP_END_SOUND.play();
             this.player.y = this.roundCoord(this.player.y, 'v');
             this.player.directionV = DirectionV.NONE;
             this.player.isFlying = false;

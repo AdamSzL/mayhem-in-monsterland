@@ -25,13 +25,13 @@ interface MonsterSpriteData {
 }
 
 export default class Monster {
+    static readonly DEAD_SOUND: HTMLAudioElement = new Audio('audio/monster-killed.wav')
     static BASE_WIDTH: number = 3
 
     readonly SPRITE_SPEED_MULTIPLIER: number = 1
     readonly STAND_TIMEOUT: number = 100
     readonly RESPAWN_TIMEOUT: number = 3000
     readonly DEAD_ANIM_SPEED: number = 15
-    //kolizje z graczem
 
     spriteCoords: { x: number, y: number }[]
     width: number = 3
@@ -41,15 +41,20 @@ export default class Monster {
     x: number
     y: number
     points: number
+    magicDustX: number
+    magicDustY: number
 
     isShooting: boolean = false
     isStanding: boolean = false
     isAlive: boolean = true
     dropsMagicDust: boolean = false
 
+    magicDust?: MagicDust = null
+
     currentSpriteIndex = 0
 
     shouldSpriteIndexIncrease: boolean = true
+    hadMagicDustPicked: boolean = false
 
     range: Range
     speed: number
@@ -63,7 +68,6 @@ export default class Monster {
     spriteData: MonsterSpritesData
 
     directionH: DirectionH = DirectionH.RIGHT
-    directionV: DirectionV = DirectionV.NONE
 
     game: Game
 
@@ -84,6 +88,15 @@ export default class Monster {
 
         this.width = spriteData.moving.right[this.currentSpriteIndex].width;
         this.height = spriteData.moving.right[this.currentSpriteIndex].height;
+    }
+
+    reset() {
+        this.x = this.startX;
+        this.y = this.startY;
+        this.directionH = DirectionH.RIGHT;
+        this.resetSprite();
+        this.isAlive = true;
+        this.magicDust = null;
     }
 
     randomizeMagicDustDrop(percent: number) {
@@ -125,9 +138,10 @@ export default class Monster {
             this.resetSprite();
             this.isAnimationRunning = false;
 
-            if (this.dropsMagicDust) {
+            if (this.dropsMagicDust && this.game.canDropMagicDust()) {
                 setTimeout(() => {
-                    this.game.magicDusts.push(new MagicDust(this.x, this.y, this.game));
+                    MagicDust.DROP_SOUND.play();
+                    this.magicDust = new MagicDust(this.magicDustX, this.magicDustY, this.game);
                 }, MagicDust.DROP_DELAY);
             }
         }

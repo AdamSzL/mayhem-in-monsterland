@@ -1,6 +1,7 @@
 import Game from '../game/Game';
 
 export default class Checkpoint {
+    static audio: HTMLAudioElement = new Audio('audio/checkpoint.wav')
     static activeSprite: HTMLImageElement
     static inactiveSprite: HTMLImageElement
 

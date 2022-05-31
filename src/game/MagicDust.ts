@@ -1,9 +1,10 @@
 import Game from './Game';
 
 export default class MagicDust {
-    static sprite: HTMLImageElement
-
+    static readonly PICK_SOUND: HTMLAudioElement = new Audio('audio/magic-dust-pick.wav')
+    static readonly DROP_SOUND: HTMLAudioElement = new Audio('audio/magic-dust-drop.wav')
     static readonly DROP_DELAY: number = 200
+    static sprite: HTMLImageElement
 
     readonly SPRITE_COUNT: number = 9
     readonly POINTS: number = 200

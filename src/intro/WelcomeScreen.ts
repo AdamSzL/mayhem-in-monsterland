@@ -76,8 +76,7 @@ export default class WelcomeScreen {
             this.gameText.remove();
             this.introText.remove();
             if (mode === 'game') {
-                this.game.gameScreen.showScreen('start');
-                //this.game.start();
+                this.game.showLoadingScreen();
             } else {
                 this.playIntro();
             }
