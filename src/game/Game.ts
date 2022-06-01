@@ -111,6 +111,7 @@ export default class Game {
         this.initScreens(levelScreen, continueScreen, gameOverScreen, finishScreen, gameScreen, continuesDigits, numbers);
         this.spawnMonsters();
         this.initCheckpoints(checkpointInactiveSprite, checkpointActiveSprite);
+        this.loadingScreen.spritesLoaded = true;
     }
 
     showLoadingScreen() {
