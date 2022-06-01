@@ -22,6 +22,7 @@ import LevelScreen from '../screens/LevelScreen';
 import FinishScreen from '../screens/FinishScreen';
 import GameScreen from '../screens/GameScreen';
 import LoadingScreen from '../screens/LoadingScreen';
+import TextSprite from '../sprites/TextSprite';
 
 
 export default class Game {
@@ -371,11 +372,23 @@ export default class Game {
         });
     }
 
+    updateMagicScore(dt: number) {
+        if (this.magic === 0) {
+            const magicSprite = this.statsPanel.textSprites.find(textSprite => textSprite.name === 'magic');
+            magicSprite.spriteIndex += dt * magicSprite.spriteChangeSpeed;
+
+            if (magicSprite.spriteIndex > TextSprite.MAGIC_SPRITE_COUNT) {
+                magicSprite.spriteIndex = 0;
+            }
+        }
+    }
+
     update(dt: number) {
         this.respawnDeadMonsters();
         this.handleChekpointReach();
         this.monsters.forEach(monster => monster.update(dt));
         this.updateMagicDusts(dt);
+        this.updateMagicScore(dt);
         this.checkpoints.forEach(checkpoint => checkpoint.update(dt));
         this.monsterStars.forEach(star => star.update(dt));
         this.player.update(dt);

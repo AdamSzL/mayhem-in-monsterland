@@ -1,6 +1,9 @@
 import IRenderable from './IRenderable';
 
 export default class TextSprite implements IRenderable {
+    static readonly MAGIC_SPRITE_COUNT: number = 10
+    static readonly MAGIC_OFFSET: number = 2
+
     name: string
 
     destX: number
@@ -8,6 +11,9 @@ export default class TextSprite implements IRenderable {
 
     destWidth: number
     destHeight: number
+
+    spriteIndex: number = 0
+    spriteChangeSpeed: number = 10
 
     sprite: HTMLImageElement
 

@@ -78,7 +78,11 @@ export default class StatsPanel {
 
         for (let char of value) {
             const { x, y, width, height } = numbers[char];
-            ctx.drawImage(this.numbers, x, y, width, height, destX, this.STATS_TOP, width, height);
+            if (textSprite.name === 'magic' && this.game.magic === 0) {
+                ctx.drawImage(this.numbers, x, height * (Math.floor(textSprite.spriteIndex) + TextSprite.MAGIC_OFFSET), width, height, destX, this.STATS_TOP, width, height);
+            } else {
+                ctx.drawImage(this.numbers, x, y, width, height, destX, this.STATS_TOP, width, height);
+            }
 
             destX += (width + this.DIGIT_OFFSET);
         }

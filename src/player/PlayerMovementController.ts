@@ -241,6 +241,9 @@ export class PlayerMovementController {
             }
         } else {
             this.player.y += (dt * this.player.jumpSpeed);
+            if (this.checkIfBlocked('bottom')) {
+                this.player.y = this.roundCoord(this.player.y, 'v');
+            }
         }
     }
 
