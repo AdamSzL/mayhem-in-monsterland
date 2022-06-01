@@ -22,7 +22,6 @@ import LevelScreen from '../screens/LevelScreen';
 import FinishScreen from '../screens/FinishScreen';
 import GameScreen from '../screens/GameScreen';
 import LoadingScreen from '../screens/LoadingScreen';
-import TextSprite from '../sprites/TextSprite';
 
 
 export default class Game {
@@ -42,6 +41,8 @@ export default class Game {
     static readonly FINISH_BLOCK_START_X: number = 476
     static readonly FINISH_BLOCK_END_X: number = 480
     static readonly FINISH_BLOCK_OFFSET: number = 5
+
+    readonly CHECKPOINT_REACH_ANIM_TIMEOUT: number = 2000
 
     readonly MAP_OFFSET: number = 17
 
@@ -106,7 +107,7 @@ export default class Game {
         MonsterSprites.normalSprite = monsterSprite;
         MonsterSprites.animationSprite = monsterAnimationSprite;
         MonsterSprites.starAnimationSprite = monsterStarAnimationSprite;
-        this.statsPanel = new StatsPanel(this, [score, magic, time, up, stars, numbers]);
+        this.statsPanel = new StatsPanel(this, score, magic, time, up, stars, numbers);
         this.map = new Map(this, map);
         this.player = new Player(this, player);
         this.initScreens(levelScreen, continueScreen, gameOverScreen, finishScreen, gameScreen, continuesDigits, numbers);
@@ -128,6 +129,7 @@ export default class Game {
         this.clearCanvas();
         this.resetMonsters();
         this.resetMonsterStars();
+        this.statsPanel.reset();
         this.player.initController();
 
         this.startTime = Date.now();
@@ -259,6 +261,10 @@ export default class Game {
                 this.makeCheckpointsInactive();
                 checkpoint.isActive = true;
                 this.didReachCheckpoint = true;
+                setTimeout(() => {
+                    this.statsPanel.lives.textSpriteIndex = 0;
+                    this.didReachCheckpoint = false;
+                }, this.CHECKPOINT_REACH_ANIM_TIMEOUT);
                 this.player.lives = this.player.TOTAL_LIVES;
                 Checkpoint.audio.currentTime = 0;
                 Checkpoint.audio.play();
@@ -347,6 +353,7 @@ export default class Game {
         this.player.spawnAtCheckpoint();
         this.restartAudio();
         this.resetMonsters();
+        this.statsPanel.reset();
         this.resetMonsterStars();
         this.enableStarRespawn();
         this.shouldRenderLevelScreen = false;
@@ -374,23 +381,12 @@ export default class Game {
         });
     }
 
-    updateMagicScore(dt: number) {
-        if (this.magic === 0) {
-            const magicSprite = this.statsPanel.textSprites.find(textSprite => textSprite.name === 'magic');
-            magicSprite.spriteIndex += dt * magicSprite.spriteChangeSpeed;
-
-            if (magicSprite.spriteIndex > TextSprite.MAGIC_SPRITE_COUNT) {
-                magicSprite.spriteIndex = 0;
-            }
-        }
-    }
-
     update(dt: number) {
         this.respawnDeadMonsters();
         this.handleChekpointReach();
         this.monsters.forEach(monster => monster.update(dt));
         this.updateMagicDusts(dt);
-        this.updateMagicScore(dt);
+        this.statsPanel.update(dt);
         this.checkpoints.forEach(checkpoint => checkpoint.update(dt));
         this.monsterStars.forEach(star => star.update(dt));
         this.player.update(dt);

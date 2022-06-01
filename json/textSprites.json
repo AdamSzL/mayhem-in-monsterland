@@ -1,37 +1,32 @@
-[
-    {
-        "name": "score",
+{
+    "score": {
         "destX": 14,
         "destY": 730,
         "destWidth": 184,
         "destHeight": 33
     },
-    {
-        "name": "magic",
+    "magic": {
         "destX": 400,
         "destY": 730,
         "destWidth": 204,
         "destHeight": 35
     },
-    {
-        "name": "time",
+    "time": {
         "destX": 750,
         "destY": 730,
         "destWidth": 145,
         "destHeight": 32
     },
-    {
-        "name": "1up",
+    "lives": {
         "destX": 1090,
         "destY": 730,
         "destWidth": 96,
         "destHeight": 32
     },
-    {
-        "name": "stars",
+    "stars": {
         "destX": 400,
         "destY": 730,
         "destWidth": 185,
         "destHeight": 33
     }
-]
+}
