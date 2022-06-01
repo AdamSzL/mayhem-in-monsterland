@@ -1,6 +1,5 @@
 import Game from '../game/Game';
 import { DirectionH, DirectionV } from '../player/PlayerMovementController';
-import IRenderable from '../sprites/IRenderable';
 import ramps from '../../json/ramps.json';
 
 export interface Ramp {
@@ -11,7 +10,7 @@ export interface Ramp {
     type: string
 }
 
-export default class Map implements IRenderable {
+export default class Map {
     x: number = 391
     y: number = 0
     destX: number = 0

@@ -1,6 +1,4 @@
-import IRenderable from './IRenderable';
-
-export default class TextSprite implements IRenderable {
+export default class TextSprite {
     static readonly MAGIC_SPRITE_COUNT: number = 10
     static readonly MAGIC_OFFSET: number = 2
 
@@ -11,6 +9,8 @@ export default class TextSprite implements IRenderable {
 
     destWidth: number
     destHeight: number
+
+    textSpriteIndex: number = 0
 
     spriteIndex: number = 0
     spriteChangeSpeed: number = 10
@@ -30,6 +30,6 @@ export default class TextSprite implements IRenderable {
 
     render() {
         const ctx = this.playfield.getContext('2d');
-        ctx.drawImage(this.sprite, 0, 0, this.destWidth, this.destHeight, this.destX, this.destY, this.destWidth, this.destHeight);
+        ctx.drawImage(this.sprite, 0, this.spriteIndex * this.destHeight, this.destWidth, this.destHeight, this.destX, this.destY, this.destWidth, this.destHeight);
     }
 }

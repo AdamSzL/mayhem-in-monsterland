@@ -7,7 +7,7 @@ export default class LevelScreen extends Screen {
     readonly ANIM_SPRITE_COUNT: number = 45
     readonly ANIM_SPRITE_INC: number = 0.5
 
-    readonly audio: HTMLAudioElement = new Audio('audio/level-screen.wav')
+    readonly AUDIO: HTMLAudioElement = new Audio('audio/level-screen.wav')
     readonly dx: number = 0
     dy: number = Game.PLAYFIELD_HEIGHT
     sx: number = 0
@@ -26,8 +26,8 @@ export default class LevelScreen extends Screen {
     }
 
     show() {
-        this.audio.currentTime = 0;
-        this.audio.play();
+        this.AUDIO.currentTime = 0;
+        this.AUDIO.play();
         this.startAnimation();
     }
 
@@ -74,8 +74,8 @@ export default class LevelScreen extends Screen {
     }
 
     resumeGame() {
-        this.audio.pause();
-        this.audio.currentTime = 0;
+        this.AUDIO.pause();
+        this.AUDIO.currentTime = 0;
         this.game.resume();
     }
 

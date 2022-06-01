@@ -75,3 +75,18 @@ video {
     top: 0;
     color: white;
 }
+
+.play-button {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 20px;
+    background: none;
+    border: 1px solid white;
+    color: white;
+    padding: 5px;
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 20px;
+}

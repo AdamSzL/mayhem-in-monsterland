@@ -23,6 +23,7 @@ export default class Player {
     readonly FALL_ANIM_TOP_TIMEOUT: number = 200
     readonly MONSTER_KILLED_JUMP_HEIGHT: number = 3
     readonly BASE_JUMP_HEIGHT: number = 8
+    readonly TOTAL_LIVES: number = 2
     static readonly DEFAULT_X: number = 408
     static readonly DEFAULT_Y: number = 9
 
@@ -221,7 +222,7 @@ export default class Player {
         this.currentPosIndex = 0;
         this.shouldUpdate = true;
         this.shouldRender = true;
-        this.lives = 2;
+        this.lives = this.TOTAL_LIVES;
         this.game.startTime = Date.now();
         //dodać animacje wjazdu (x)
         const checkpoint = this.game.checkpoints.find(checkpoint => checkpoint.isActive);

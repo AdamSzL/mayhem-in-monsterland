@@ -1,7 +1,7 @@
 import WelcomeScreen from '../intro/WelcomeScreen';
 import Map from '../map/Map';
 import SpritesLoader from '../sprites/SpritesLoader';
-import StatsPanel from './StatsPanel';
+import StatsPanel from '../stats/StatsPanel';
 import Player from '../player/Player';
 import maps from '../../json/maps.json';
 import Monster from '../monster/Monster';
@@ -68,6 +68,7 @@ export default class Game {
     shouldRenderContinueScreen: boolean = false
     shouldRenderFinishScreen: boolean = false
     shouldRenderGameScreen: boolean = false
+    didReachCheckpoint: boolean = false
     canRunTimeOutAnim: boolean = true
 
     playfield: HTMLCanvasElement = document.querySelector('canvas')
@@ -254,13 +255,13 @@ export default class Game {
 
     handleChekpointReach() {
         this.checkpoints.forEach(checkpoint => {
-            if (Math.abs(this.player.x - checkpoint.x) <= 5 && !checkpoint.isActive) {
-                if (this.player.movementController.checkIfCollides(checkpoint)) {
-                    this.makeCheckpointsInactive();
-                    checkpoint.isActive = true;
-                    Checkpoint.audio.currentTime = 0;
-                    Checkpoint.audio.play();
-                }
+            if (this.player.movementController.checkIfCollides(checkpoint) && !checkpoint.isActive) {
+                this.makeCheckpointsInactive();
+                checkpoint.isActive = true;
+                this.didReachCheckpoint = true;
+                this.player.lives = this.player.TOTAL_LIVES;
+                Checkpoint.audio.currentTime = 0;
+                Checkpoint.audio.play();
             }
         });
     }
@@ -284,7 +285,7 @@ export default class Game {
 
     respawnDeadMonsters() {
         this.monsters.forEach(monster => {
-            if (!monster.isAlive && (monster.startX + (monster.width / Game.CELL_SIZE) < this.map.x || monster.startX > this.map.x + this.map.destWidth / Game.CELL_SIZE)) {
+            if (!monster.isAlive && (monster.startX + (monster.width / Game.CELL_SIZE) + Monster.RESPAWN_OFFSET < this.map.x || monster.startX - Monster.RESPAWN_OFFSET > this.map.x + this.map.destWidth / Game.CELL_SIZE)) {
                 monster.x = monster.startX;
                 monster.y = monster.startY;
                 monster.isAlive = true;

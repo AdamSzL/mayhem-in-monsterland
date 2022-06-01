@@ -2,13 +2,13 @@ import Screen from './Screen';
 import Game from '../game/Game';
 import numbers from '../../json/numberSprites.json';
 import { NumberFormatter } from '../helpers/helpers';
-import { NumberSprite } from '../game/StatsPanel';
+import { NumberSprite } from '../stats/StatsPanel';
 
 const numbersData: { [key: string]: NumberSprite } = numbers;
 
 export default class GameScreen extends Screen {
 
-    audio: HTMLAudioElement = new Audio('audio/game-screen.wav');
+    readonly AUDIO: HTMLAudioElement = new Audio('audio/game-screen.wav');
 
     readonly SCORE_BASE_X: number = 370
     readonly SCORE_BASE_Y: number = 665
@@ -46,7 +46,7 @@ export default class GameScreen extends Screen {
 
     showScreen(mode: string) {
         this.animSpriteIndex = 0;
-        this.audio.play();
+        this.AUDIO.play();
         this.game.clearCanvas();
         this.getHighestScore();
         this.spriteAnimation = window.setInterval(() => {
@@ -66,8 +66,8 @@ export default class GameScreen extends Screen {
     }
 
     hideScreen(mode: string) {
-        this.audio.pause();
-        this.audio.currentTime = 0;
+        this.AUDIO.pause();
+        this.AUDIO.currentTime = 0;
         if (mode === 'start') {
             this.game.shouldRenderLevelScreen = true;
             this.game.start();
