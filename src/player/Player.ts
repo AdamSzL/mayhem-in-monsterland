@@ -14,7 +14,9 @@ export default class Player {
     readonly JUMP_END_SOUND: HTMLAudioElement = new Audio('audio/jump-end.wav')
     readonly BEING_HIT_SOUND: HTMLAudioElement = new Audio('audio/player-being-hit.wav')
     readonly DEAD_SOUND: HTMLAudioElement = new Audio('audio/player-dead.wav')
+    readonly CHARGE_START_SOUND: HTMLAudioElement = new Audio('audio/charge-start.wav')
     readonly SPRITE_COUNT: number = 8
+    readonly CHARGE_SPRITE_COUNT: number = 3
     readonly SPECIAL_ANIM_SPRITE_COUNT: number = 5
     readonly HIT_ANIM_SPRITE_COUNT: number = 2
     readonly HIT_ANIM_Y: number = 6
@@ -24,6 +26,7 @@ export default class Player {
     readonly MONSTER_KILLED_JUMP_HEIGHT: number = 3
     readonly BASE_JUMP_HEIGHT: number = 8
     readonly TOTAL_LIVES: number = 2
+    readonly CHARGE_STOP_ANIM_TIME: number = 200
     static readonly DEFAULT_X: number = 408
     static readonly DEFAULT_Y: number = 9
 
@@ -66,8 +69,10 @@ export default class Player {
     isFlying: boolean = false
     isDucking: boolean = false
     isDuckFalling: boolean = false
+    isCharging: boolean = false
     shouldRunSpecialAnim: boolean = false
     shouldRunHitAnimation: boolean = false
+    shouldRunStopChargeAnim: boolean = false
     shouldUpdate: boolean = true
 
     jumpStartY: number
@@ -94,10 +99,11 @@ export default class Player {
     resetSpeed() {
         this.vx = Game.BASE_SPEED;
         this.game.map.vx = Game.BASE_SPEED;
+        Game.maxSpeed = Game.NORMAL_MAX_SPEED;
     }
 
     increaseSpeed(dt: number) {
-        if (this.vx < Game.MAX_SPEED) {
+        if (this.vx < Game.maxSpeed) {
             this.vx += Game.SPEED_MULTIPLIER * dt;
             this.game.map.vx += Game.SPEED_MULTIPLIER * dt;
         }
@@ -161,6 +167,7 @@ export default class Player {
     }
 
     handleDeath() {
+        this.currentPosIndex = 0;
         this.game.mainAudio.pause();
         setTimeout(() => {
             if (this.game.triesLeft === 0) {
@@ -180,13 +187,30 @@ export default class Player {
     }
 
     handleBlocked() {
+        let shouldStopCharge: boolean = false
         if (this.directionH === DirectionH.RIGHT && this.isMoving && this.movementController.checkIfBlocked('right') && !this.movementController.checkIfXAtRamp()) {
+            shouldStopCharge = true;
             this.x = this.movementController.roundCoord(this.x, 'h');
             this.isMoving = false;
         } else if (this.directionH === DirectionH.LEFT && this.isMoving && this.movementController.checkIfBlocked('left') && !this.movementController.checkIfXAtRamp()) {
+            shouldStopCharge = true;
             this.x = this.movementController.roundCoord(this.x, 'h');
             this.isMoving = false;
         }
+
+        if (this.isCharging && shouldStopCharge) {
+            this.stopCharge();
+        }
+    }
+
+    stopCharge() {
+        this.currentPosIndex = 0;
+        this.resetSpeed();
+        this.isCharging = false;
+        this.shouldRunStopChargeAnim = true;
+        setTimeout(() => {
+            this.shouldRunStopChargeAnim = false;
+        }, this.CHARGE_STOP_ANIM_TIME);
     }
 
     updateSprite(dt: number) {
@@ -196,7 +220,8 @@ export default class Player {
             this.currentPosIndex += (dt * this.spriteChangeSpeed);
         }
 
-        if (this.currentPosIndex >= this.SPRITE_COUNT) {
+        const spriteCount = this.isCharging ? this.CHARGE_SPRITE_COUNT : this.SPRITE_COUNT;
+        if (this.currentPosIndex >= spriteCount) {
             this.currentPosIndex = 0;
         }
 
@@ -220,11 +245,12 @@ export default class Player {
 
     spawnAtCheckpoint() {
         this.currentPosIndex = 0;
+        this.isCharging = false;
+        this.resetSpeed();
         this.shouldUpdate = true;
         this.shouldRender = true;
         this.lives = this.TOTAL_LIVES;
         this.game.startTime = Date.now();
-        //dodać animacje wjazdu (x)
         const checkpoint = this.game.checkpoints.find(checkpoint => checkpoint.isActive);
         if (checkpoint) {
             this.x = checkpoint.x;
@@ -267,26 +293,29 @@ export default class Player {
 
     checkForMonsterCollisions() {
         this.game.monsters.forEach(monster => {
-            if (Math.abs(this.x - monster.x) <= 5 && monster.isAlive) {
-                if (this.movementController.checkIfCollides(monster)) {
-                    if (this.directionV === DirectionV.DOWN && (monster.y - this.y >= 2)) {
-                        Monster.DEAD_SOUND.play();
-                        this.jumpStartY = this.y;
-                        this.isFlying = true;
-                        this.directionV = DirectionV.UP;
-                        this.jumpHeight = this.MONSTER_KILLED_JUMP_HEIGHT;
-                        monster.isAlive = false;
-                        monster.magicDustX = monster.x;
-                        monster.magicDustY = monster.y;
-                        this.game.score += monster.points;
-                        monster.isAnimationRunning = true;
-                        monster.currentSpriteIndex = 0;
-                        if (monster.mode === 'shooting') {
-                            this.game.disableMonsterStarRespawn(monster.x, monster.y);
-                        }
-                    } else {
-                        this.handleBeingHit();
+            if (monster.isAlive && this.movementController.checkIfCollides(monster)) {
+                if (this.isCharging || (this.directionV === DirectionV.DOWN && (monster.y - this.y >= 2))) {
+                    monster.isAlive = false;
+                    monster.magicDustX = monster.x;
+                    monster.magicDustY = monster.y;
+                    this.game.score += monster.points;
+                    monster.isAnimationRunning = true;
+                    monster.currentSpriteIndex = 0;
+                    if (monster.mode === 'shooting') {
+                        this.game.disableMonsterStarRespawn(monster.x, monster.y);
                     }
+                }
+
+                if (this.isCharging) {
+                    Monster.CHARGE_DEAD_SOUND.play();
+                } else if (this.directionV === DirectionV.DOWN && ((monster.y - this.y >= 2))) {
+                    Monster.DEAD_SOUND.play();
+                    this.jumpStartY = this.y;
+                    this.isFlying = true;
+                    this.directionV = DirectionV.UP;
+                    this.jumpHeight = this.MONSTER_KILLED_JUMP_HEIGHT;
+                } else if (!this.isCharging) {
+                    this.handleBeingHit();
                 }
             }
         });
@@ -322,7 +351,19 @@ export default class Player {
         const destY = this.y * Game.CELL_SIZE + this.TOP_OFFSET;
         let x: number, y: number
 
-        if (this.isBeingBlocked || this.isDucking) {
+        if (this.isCharging) {
+            if (this.directionH === DirectionH.LEFT) {
+                ({ x, y } = this.leftSprites['charging'][Math.floor(this.currentPosIndex)]);
+            } else if (this.directionH === DirectionH.RIGHT) {
+                ({ x, y } = this.rightSprites['charging'][Math.floor(this.currentPosIndex)]);
+            }
+        } else if (this.shouldRunStopChargeAnim) {
+            if (this.directionH === DirectionH.LEFT) {
+                ({ x, y } = this.leftSprites['charging'][3]);
+            } else if (this.directionH === DirectionH.RIGHT) {
+                ({ x, y } = this.rightSprites['charging'][3]);
+            }
+        } else if (this.isBeingBlocked || this.isDucking) {
             if (this.directionH === DirectionH.LEFT) {
                 ({ x, y } = this.leftSprites['blocked'][0]);
             } else if (this.directionH === DirectionH.RIGHT) {

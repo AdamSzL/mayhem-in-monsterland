@@ -26,6 +26,7 @@ interface MonsterSpriteData {
 
 export default class Monster {
     static readonly DEAD_SOUND: HTMLAudioElement = new Audio('audio/monster-killed.wav')
+    static readonly CHARGE_DEAD_SOUND: HTMLAudioElement = new Audio('audio/charge-monster-dead.wav')
     static readonly RESPAWN_OFFSET: number = 8
     static BASE_WIDTH: number = 3
 

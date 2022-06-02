@@ -33,7 +33,8 @@ export default class Game {
     static readonly BLOCKS_HORZ: number = 240
     static readonly PLAYER_WIDTH: number = 96
     static readonly PLAYER_HEIGHT: number = 84
-    static readonly MAX_SPEED: number = 18
+    static readonly NORMAL_MAX_SPEED: number = 18
+    static readonly CHARGE_MAX_SPEED: number = 40
     static readonly BASE_SPEED: number = 6
     static readonly SPEED_MULTIPLIER: number = 20
     static readonly MAGIC_DUST_DROP_CHANCE: number = 30
@@ -41,6 +42,8 @@ export default class Game {
     static readonly FINISH_BLOCK_START_X: number = 476
     static readonly FINISH_BLOCK_END_X: number = 480
     static readonly FINISH_BLOCK_OFFSET: number = 5
+
+    static maxSpeed: number = 18
 
     readonly CHECKPOINT_REACH_ANIM_TIMEOUT: number = 2000
 
@@ -71,6 +74,7 @@ export default class Game {
     shouldRenderGameScreen: boolean = false
     didReachCheckpoint: boolean = false
     canRunTimeOutAnim: boolean = true
+    canCharge: boolean = true
 
     playfield: HTMLCanvasElement = document.querySelector('canvas')
 

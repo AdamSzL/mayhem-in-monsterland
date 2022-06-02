@@ -61,13 +61,19 @@ export class PlayerMovementController {
             this.player.isDucking = false;
             this.player.duckFallStartY = this.player.y;
         }
+        if (fire && !this.player.isFlying && !this.player.isCharging && (this.isLeftBeingHolded || this.isRightBeingHolded) && this.player.vx >= Game.maxSpeed) {
+            this.player.currentPosIndex = 0;
+            this.player.CHARGE_START_SOUND.play();
+            this.player.isCharging = true;
+            Game.maxSpeed = Game.CHARGE_MAX_SPEED;
+        }
         if (top && this.player.directionV === DirectionV.NONE && !this.isTopBeingHolded && !this.player.isFlying) {
             this.player.JUMP_START_SOUND.play();
             this.player.directionV = DirectionV.UP;
             this.player.jumpStartY = this.player.y;
             this.player.isFlying = true;
         }
-        if (bottom && !this.player.isFlying && !this.player.isDuckFalling) {
+        if (bottom && !this.player.isFlying && !this.player.isDuckFalling && !this.player.isCharging) {
             this.player.isDucking = true;
             this.player.isMoving = false;
         }
@@ -131,6 +137,9 @@ export class PlayerMovementController {
         }
         if (this.player.isMoving && !this.player.isDucking && !this.player.shouldRunFallAnimation) {
             if (left && this.player.directionH === DirectionH.LEFT) {
+                if (this.player.isCharging) {
+                    this.player.stopCharge();
+                }
                 this.player.isMoving = false;
                 this.player.currentPosIndex = 0;
 
@@ -140,6 +149,9 @@ export class PlayerMovementController {
                     this.player.resetSpeed();
                 }
             } else if (right && this.player.directionH === DirectionH.RIGHT) {
+                if (this.player.isCharging) {
+                    this.player.stopCharge();
+                }
                 this.player.isMoving = false;
                 this.player.currentPosIndex = 0;
 
