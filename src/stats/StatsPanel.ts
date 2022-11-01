@@ -70,38 +70,5 @@ export default class StatsPanel {
         this.magic.render();
         this.time.render();
         this.lives.render();
-        //this.stars.render();
     }
-
-    // renderValue(textSprite: TextSprite) {
-    //     const ctx = this.game.playfield.getContext('2d');
-    //     let value: string = NumberFormatter.padWithZeroes(this.game.timeLeft, this.TIME_DIGITS);
-
-    //     if (textSprite.name === 'score') {
-    //         value = NumberFormatter.padWithZeroes(this.game.score, this.SCORE_DIGITS);
-    //     } else if (textSprite.name === 'stars') {
-    //         value = NumberFormatter.padWithZeroes(this.game.stars, this.STARS_DIGITS);
-    //     } else if (textSprite.name === 'magic') {
-    //         value = NumberFormatter.padWithZeroes(this.game.magic, this.MAGIC_DIGITS);
-    //     } else if (textSprite.name === '1up') {
-    //         value = NumberFormatter.padWithZeroes(this.game.triesLeft, this.UP_DIGITS);
-    //         value = 'x' + value;
-    //     }
-
-
-    //     let destX: number = textSprite.destX;
-    //     if (textSprite.name === 'magic' || textSprite.name === 'stars') destX = textSprite.destX + this.MAGIC_STARS_OFFSET;
-    //     else if (textSprite.name === 'time') destX = textSprite.destX + this.TIME_OFFSET;
-
-    //     for (let char of value) {
-    //         const { x, y, width, height } = numbers[char];
-    //         if (textSprite.name === 'magic' && this.game.magic === 0) {
-    //             ctx.drawImage(this.numbers, x, height * (Math.floor(textSprite.spriteIndex) + TextSprite.MAGIC_OFFSET), width, height, destX, this.STATS_TOP, width, height);
-    //         } else {
-    //             ctx.drawImage(this.numbers, x, y, width, height, destX, this.STATS_TOP, width, height);
-    //         }
-
-    //         destX += (width + this.DIGIT_OFFSET);
-    //     }
-    // }
 }

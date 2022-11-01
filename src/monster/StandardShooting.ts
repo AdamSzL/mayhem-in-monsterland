@@ -12,7 +12,6 @@ export default class StandardShooting extends Standard {
     }
 
     update(dt: number) {
-        //Star.update()
         if (this.shouldTurn) {
             if (this.game.player.x <= this.x && this.directionH === DirectionH.RIGHT) {
                 this.isStanding = true;
